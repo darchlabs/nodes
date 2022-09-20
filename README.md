@@ -2,4 +2,4 @@
 
 --
 
-Darch kit is a repo to enable private blockchain in dev mode based on ganache and eth mainnet info.
+Toolkit for enabling private blockchain in dev mode based on ganache and mainnet-chains related info.
