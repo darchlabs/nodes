@@ -1,6 +1,6 @@
 FROM node
 
-WORKDIR /darch-node
+WORKDIR /ethereum
 
 RUN npm install -g ganache
 
