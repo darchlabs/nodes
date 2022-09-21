@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  ethereum-node:
+    build:
+      context: ./docker/.
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "8545:8545"
+    volumes:
+      - ./data/ethereum:/ethereum:rw
+
