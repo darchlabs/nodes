@@ -134,3 +134,5 @@ tags
 
 # End of https://www.toptal.com/developers/gitignore/api/go,vim,visualstudiocode,geth,macos,linux
 
+# Data
+data/
