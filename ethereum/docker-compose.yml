@@ -9,5 +9,5 @@ services:
     ports:
       - "8545:8545"
     volumes:
-      - ./data/ethereum:/ethereum:rw
+      - ../data/ethereum:/home/node/data:rw
 
