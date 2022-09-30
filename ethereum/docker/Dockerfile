@@ -19,5 +19,4 @@ COPY --from=builder /usr/src/app/ethereum-runner /
 
 RUN npm install -g ganache
 
-
 ENTRYPOINT ["/ethereum-runner"]
