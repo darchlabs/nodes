@@ -23,7 +23,7 @@ func main() {
 		"ganache",
 		"--host", "0.0.0.0",
 		"--db", "/home/node/data",
-		"-v",
+		"--fork", fmt.Sprintf("%s@%s", conf.NodeURL, conf.BlockNumber),
 	)
 
 	log.Println("Running command : ", cmd.Slug())
