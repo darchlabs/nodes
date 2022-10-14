@@ -4,10 +4,15 @@
 #
 
 
-build-darch-node:
-	@echo "[build-darch]"
-	@docker build --no-cache -t darch-node -f ./darch-node/docker/Dockerfile --progress tty .
+build-node:
+	@echo "[building node]"
+	@docker build --no-cache -t $(CHAIN)-node -f ./$(CHAIN)/docker/Dockerfile --progress tty .
 
-compose-darch:
-	@echo "[compose-darch]"
+compose-node-up:
+	@echo "[composing node up]"
+	@docker-compose -f $(CHAIN)/docker-compose.yml up
+
+compose-node-down:
+	@echo "[composing node down]"
+	@docker-compose -f $(CHAIN)/docker-compose.yml down
 
