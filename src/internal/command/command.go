@@ -1,6 +1,7 @@
 package command
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -179,6 +180,30 @@ func (c *Command) Start() error {
 	}()
 
 	c.SetStatus(StatusRunning)
+
+	return nil
+}
+
+func (c *Command) StreamOutput() error {
+	stdout, err := c.Cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		oneByte := make([]byte, 100)
+
+		for {
+			_, err := stdout.Read(oneByte)
+			if err != nil {
+				fmt.Printf(err.Error())
+				break
+			}
+			r := bufio.NewReader(stdout)
+			line, _, _ := r.ReadLine()
+			fmt.Println(string(line))
+		}
+	}()
 
 	return nil
 }

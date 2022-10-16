@@ -3,11 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/darchlabs/nodes/src/config"
+	"github.com/darchlabs/nodes/src/internal/api"
 	"github.com/darchlabs/nodes/src/internal/command"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -27,14 +25,18 @@ func main() {
 	)
 
 	log.Println("Running command : ", cmd.Slug())
-	err = cmd.Start()
-	check(err)
 
-	log.Println(cmd.Status())
+	server := api.NewServer(&api.ServerConfig{
+		Port:    conf.ApiServerPort,
+		Command: cmd,
+	})
+
+	err = server.Start()
+	check(err)
 
 	// listen interrupt
 	quit := make(chan struct{})
-	listenInterrupt(quit)
+	command.ListenInterruption(quit)
 	<-quit
 }
 
@@ -42,14 +44,4 @@ func check(err error) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func listenInterrupt(quit chan struct{}) {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		s := <-c
-		fmt.Println("Signal received", s.String())
-		quit <- struct{}{}
-	}()
 }
