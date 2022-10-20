@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/darchlabs/nodes/src/internal/command"
+	"github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -24,7 +25,7 @@ type Server struct {
 
 func NewServer(config *ServerConfig) *Server {
 	return &Server{
-		server: fiber.New(),
+		server: gin.Default(),
 		port:   config.Port,
 		cmd:    config.Command,
 	}
