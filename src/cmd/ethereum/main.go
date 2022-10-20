@@ -11,21 +11,27 @@ import (
 )
 
 func main() {
+	fmt.Println("------ Starting node runner")
 	var conf config.Config
 	err := envconfig.Process("", &conf)
 	check(err)
 
 	log.Printf("Starting [darch %s node]\n", conf.Chain)
+	log.Printf("%s", conf.BaseChainDataPath)
+
+	nodeURL := fmt.Sprintf("%s@%s", conf.NodeURL, conf.BlockNumber)
 
 	cmd := command.New(
 		"ganache",
 		"--host", "0.0.0.0",
-		"--db", "/home/node/data",
-		"--fork", fmt.Sprintf("%s@%s", conf.NodeURL, conf.BlockNumber),
+		"--db", fmt.Sprintf("%s", conf.BaseChainDataPath),
+		"--fork", nodeURL,
 	)
 
-	log.Println("Running command : ", cmd.Slug())
+	err = cmd.Start()
+	check(err)
 
+	//log.Println(cmd.Status())
 	server := api.NewServer(&api.ServerConfig{
 		Port:    conf.ApiServerPort,
 		Command: cmd,
@@ -33,6 +39,8 @@ func main() {
 
 	err = server.Start()
 	check(err)
+	log.Println("Running command : ", cmd.Slug())
+	log.Println("Running command : ", cmd.Status())
 
 	// listen interrupt
 	quit := make(chan struct{})

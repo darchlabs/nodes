@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/darchlabs/nodes/src/internal/command"
 	"github.com/gofiber/fiber/v2"
@@ -24,22 +23,15 @@ type Server struct {
 }
 
 func NewServer(config *ServerConfig) *Server {
-	server := fiber.New()
-
 	return &Server{
-		server: server,
+		server: fiber.New(),
 		port:   config.Port,
+		cmd:    config.Command,
 	}
 }
 
 func (s *Server) Start() error {
-	err := s.cmd.StreamOutput()
-	err = s.cmd.Start()
-	if err != nil {
-		return err
-	}
-
-	log.Println(s.cmd.Status())
+	//log.Println(s.cmd.Status())
 
 	go func() { // TODO: replace this with server running
 		s.server.Listen(fmt.Sprintf(":%s", s.port))
