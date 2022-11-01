@@ -136,4 +136,4 @@ tags
 
 # Data
 data/
-bin/
+bin/*
