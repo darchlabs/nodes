@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/darchlabs/nodes/src/config"
+	"github.com/darchlabs/nodes/src/internal/api"
 	"github.com/darchlabs/nodes/src/internal/command"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -20,31 +21,18 @@ func main() {
 
 	nodeURL := fmt.Sprintf("%s@%s", conf.NodeURL, conf.BlockNumber)
 
-	cmd := command.New(
-		"ganache",
-		"--host", "0.0.0.0",
-		"--db", fmt.Sprintf("%s", conf.BaseChainDataPath),
-		"--fork", nodeURL,
-	)
+	server := api.NewServer(&api.ServerConfig{
+		Port: conf.ApiServerPort,
+		CommandConfig: &api.CommandConfig{
+			Runner:           "ganache",
+			Host:             "0.0.0.0",
+			DatabasePath:     fmt.Sprintf("%s", conf.BaseChainDataPath),
+			BootstrapNodeURL: nodeURL,
+		},
+	})
 
-	//server := api.NewServer(&api.ServerConfig{
-	//Port: conf.ApiServerPort,
-	//Command: command.New(
-	//"ganache",
-	//"--host", "0.0.0.0",
-	//"--db", fmt.Sprintf("%s", conf.BaseChainDataPath),
-	//"--fork", nodeURL,
-	//)})
-
-	//err = server.Start()
-	err = cmd.Start()
+	err = server.Start()
 	check(err)
-
-	//log.Println(cmd.Status())
-
-	check(err)
-	//log.Println("Running command : ", cmd.Slug())
-	//log.Println("Running command : ", cmd.Status())
 
 	// listen interrupt
 	quit := make(chan struct{})
