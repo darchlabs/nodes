@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/darchlabs/nodes/src/internal/command"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
 type Context struct {
@@ -25,14 +25,14 @@ type CommandConfig struct {
 }
 
 type Server struct {
-	server *gin.Engine
+	server *fiber.App
 	port   string
 	cmd    *command.Command
 }
 
 func NewServer(config *ServerConfig) *Server {
 	return &Server{
-		server: gin.Default(),
+		server: fiber.New(),
 		port:   config.Port,
 		cmd: command.New(
 			config.CommandConfig.Runner,
@@ -44,19 +44,18 @@ func NewServer(config *ServerConfig) *Server {
 }
 
 func (s *Server) Start() error {
-	go func() { // TODO: replace this with server running
-		fmt.Println("Running server")
-		err := s.server.Run(fmt.Sprintf(":%s", s.port))
-		fmt.Println("ERROR ON SERVER RUNNING ", err)
-	}()
-
 	err := s.cmd.Start()
 	if err != nil {
 		return err
 	}
+	log.Printf("Node is %s\n", s.cmd.Status())
 
-	log.Println(s.cmd.Slug())
-	log.Println(s.cmd.Status())
+	go func() {
+		err := s.server.Listen(fmt.Sprintf(":%s", s.port))
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	return nil
 }
