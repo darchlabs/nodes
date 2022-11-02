@@ -32,12 +32,8 @@ ENV NODE_URL ${NODE_URL}
 ARG BLOCK_NUMBER
 ENV BLOCK_NUMBER ${BLOCK_NUMBER}
 
-
-
 COPY --from=builder /usr/src/app/eth-runner /home/node
 
 RUN npm install -g ganache
-RUN echo "setInterval(function () {console.log('Every 5 secondes');}, 5000);console.log('now');" >> index.js
 
 CMD ["./eth-runner"]
-#CMD ["node", "index.js"]
