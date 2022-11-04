@@ -15,6 +15,10 @@ import (
 // Status represents the current command status
 type Status string
 
+func (s Status) String() string {
+	return string(s)
+}
+
 // Command statuses
 const (
 	StatusIdle         Status = "idle"

@@ -24,6 +24,7 @@ func main() {
 	server := api.NewServer(&api.ServerConfig{
 		Port: conf.ApiServerPort,
 		CommandConfig: &api.CommandConfig{
+			Chain:            conf.Chain,
 			Runner:           "ganache",
 			Host:             "0.0.0.0",
 			DatabasePath:     fmt.Sprintf("%s", conf.BaseChainDataPath),

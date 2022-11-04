@@ -8,16 +8,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type Context struct {
-	cmd *command.Command
-}
-
 type ServerConfig struct {
 	Port          string
 	CommandConfig *CommandConfig
 }
 
 type CommandConfig struct {
+	Chain            string
 	Runner           string
 	Host             string
 	DatabasePath     string
@@ -26,14 +23,16 @@ type CommandConfig struct {
 
 type Server struct {
 	server *fiber.App
-	port   string
 	cmd    *command.Command
+	port   string
+	chain  string
 }
 
 func NewServer(config *ServerConfig) *Server {
 	return &Server{
 		server: fiber.New(),
 		port:   config.Port,
+		chain:  config.CommandConfig.Chain,
 		cmd: command.New(
 			config.CommandConfig.Runner,
 			config.CommandConfig.Host,
@@ -50,7 +49,16 @@ func (s *Server) Start() error {
 	}
 	log.Printf("Node is %s\n", s.cmd.Status())
 
+	//err = s.cmd.StreamOutput()
+	//if err != nil {
+	//return err
+	//}
+
 	go func() {
+		// route endpoints
+		routeNodeEndpoints("/nodes", s)
+
+		// sever listen
 		err := s.server.Listen(fmt.Sprintf(":%s", s.port))
 		if err != nil {
 			panic(err)
@@ -58,4 +66,19 @@ func (s *Server) Start() error {
 	}()
 
 	return nil
+}
+
+type handler func(*Server, *fiber.Ctx) (interface{}, int, error)
+
+func handleFunc(s *Server, fn handler) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		payload, statusCode, err := fn(s, c)
+		if err != nil {
+			return c.Status(statusCode).JSON(map[string]string{
+				"error": err.Error(),
+			})
+		}
+
+		return c.Status(statusCode).JSON(payload)
+	}
 }
