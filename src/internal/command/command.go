@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -166,9 +167,29 @@ func (c *Command) Wait() error {
 	return c.Cmd.Wait()
 }
 
+func (c *Command) streamOutputWithPrefix(prefix string, rc io.ReadCloser) {
+	scanner := bufio.NewScanner(rc)
+	for scanner.Scan() {
+		fmt.Printf("[%s] %s\n", prefix, scanner.Text())
+	}
+}
+
 // Start starts the process and pipes the command's output to the log file.
 // If at any point there is an error it also closes the file if exists.
 func (c *Command) Start() error {
+	pipe, err := c.Cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	pipeErr, err := c.Cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+
+	go c.streamOutputWithPrefix("STDOUT", pipe)
+	go c.streamOutputWithPrefix("STDERR", pipeErr)
+
 	if err := c.Cmd.Start(); err != nil {
 		c.SetStatus(StatusBootingError)
 		return err
@@ -177,37 +198,15 @@ func (c *Command) Start() error {
 	go func() {
 		err := c.Wait()
 		if err != nil {
+			fmt.Println("[ERROR] status changed to crashed due to", err.Error())
 			c.SetStatus(StatusCrashed)
 		}
+
 		c.exitError <- err
 		c.Finish <- err
 	}()
 
 	c.SetStatus(StatusRunning)
-
-	return nil
-}
-
-func (c *Command) StreamOutput() error {
-	stdout, err := c.Cmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		oneByte := make([]byte, 100)
-
-		for {
-			_, err := stdout.Read(oneByte)
-			if err != nil {
-				fmt.Printf(err.Error())
-				break
-			}
-			r := bufio.NewReader(stdout)
-			line, _, _ := r.ReadLine()
-			fmt.Println(string(line))
-		}
-	}()
 
 	return nil
 }

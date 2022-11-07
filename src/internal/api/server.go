@@ -9,16 +9,9 @@ import (
 )
 
 type ServerConfig struct {
-	Port          string
-	CommandConfig *CommandConfig
-}
-
-type CommandConfig struct {
-	Chain            string
-	Runner           string
-	Host             string
-	DatabasePath     string
-	BootstrapNodeURL string
+	Port    string
+	Chain   string
+	Command *command.Command
 }
 
 type Server struct {
@@ -32,13 +25,8 @@ func NewServer(config *ServerConfig) *Server {
 	return &Server{
 		server: fiber.New(),
 		port:   config.Port,
-		chain:  config.CommandConfig.Chain,
-		cmd: command.New(
-			config.CommandConfig.Runner,
-			config.CommandConfig.Host,
-			config.CommandConfig.DatabasePath,
-			config.CommandConfig.BootstrapNodeURL,
-		),
+		chain:  config.Chain,
+		cmd:    config.Command,
 	}
 }
 
@@ -48,11 +36,6 @@ func (s *Server) Start() error {
 		return err
 	}
 	log.Printf("Node is %s\n", s.cmd.Status())
-
-	//err = s.cmd.StreamOutput()
-	//if err != nil {
-	//return err
-	//}
 
 	go func() {
 		// route endpoints
