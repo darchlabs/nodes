@@ -7,6 +7,7 @@ import (
 	"github.com/darchlabs/nodes/src/config"
 	"github.com/darchlabs/nodes/src/internal/api"
 	"github.com/darchlabs/nodes/src/internal/command"
+	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -19,8 +20,9 @@ func main() {
 	log.Printf("Starting [darch %s node]\n", conf.Chain)
 
 	server := api.NewServer(&api.ServerConfig{
-		Port:  conf.ApiServerPort,
-		Chain: conf.Chain,
+		Port:        conf.ApiServerPort,
+		Chain:       conf.Chain,
+		IDGenerator: uuid.NewString,
 		Command: command.New(
 			"ganache",
 			"--host", "0.0.0.0",
