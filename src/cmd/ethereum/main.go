@@ -17,19 +17,16 @@ func main() {
 	check(err)
 
 	log.Printf("Starting [darch %s node]\n", conf.Chain)
-	log.Printf("%s", conf.BaseChainDataPath)
-
-	nodeURL := fmt.Sprintf("%s@%s", conf.NodeURL, conf.BlockNumber)
 
 	server := api.NewServer(&api.ServerConfig{
-		Port: conf.ApiServerPort,
-		CommandConfig: &api.CommandConfig{
-			Chain:            conf.Chain,
-			Runner:           "ganache",
-			Host:             "0.0.0.0",
-			DatabasePath:     fmt.Sprintf("%s", conf.BaseChainDataPath),
-			BootstrapNodeURL: nodeURL,
-		},
+		Port:  conf.ApiServerPort,
+		Chain: conf.Chain,
+		Command: command.New(
+			"ganache",
+			"--host", "0.0.0.0",
+			"--db", conf.BaseChainDataPath,
+			"--fork", fmt.Sprintf("%s@%s", conf.NodeURL, conf.BlockNumber),
+		),
 	})
 
 	err = server.Start()
