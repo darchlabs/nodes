@@ -6,36 +6,56 @@ import (
 
 	"github.com/darchlabs/nodes/src/internal/command"
 	"github.com/gofiber/fiber/v2"
+	"github.com/pkg/errors"
 )
 
+type IDGenerator func() string
+
 type ServerConfig struct {
-	Port    string
-	Chain   string
-	Command *command.Command
+	Port        string
+	Chain       string
+	IDGenerator IDGenerator
+	Command     *command.Command
 }
 
 type Server struct {
-	server *fiber.App
-	cmd    *command.Command
-	port   string
-	chain  string
+	server       *fiber.App
+	port         string
+	cmd          *command.Command
+	nodes        map[string]*command.Command
+	idGenerator  IDGenerator
+	masterNodeID string
+	chain        string
 }
 
 func NewServer(config *ServerConfig) *Server {
+	id := config.IDGenerator()
+
 	return &Server{
-		server: fiber.New(),
-		port:   config.Port,
-		chain:  config.Chain,
-		cmd:    config.Command,
+		server:       fiber.New(),
+		port:         config.Port,
+		chain:        config.Chain,
+		idGenerator:  config.IDGenerator,
+		masterNodeID: id,
+		nodes: map[string]*command.Command{
+			id: config.Command,
+		},
+		cmd: config.Command,
 	}
 }
 
 func (s *Server) Start() error {
-	err := s.cmd.Start()
-	if err != nil {
-		return err
+	cmd, ok := s.nodes[s.masterNodeID]
+	if !ok {
+		return errors.New("api: Server.Start s.cmd.nodes not found")
 	}
-	log.Printf("Node is %s\n", s.cmd.Status())
+
+	err := cmd.Start(s.masterNodeID)
+	if err != nil {
+		return errors.Wrap(err, "api: Server.Start s.cmd.nodes not found")
+	}
+
+	log.Printf("Master %s-node is %s with id %s\n", s.chain, s.cmd.Status(), s.masterNodeID)
 
 	go func() {
 		// route endpoints
