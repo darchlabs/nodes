@@ -7,25 +7,27 @@ import (
 type nodeStatus struct {
 	ID     string `json:"id"`
 	Chain  string `json:"chain"`
+	Port   int    `json:"port"`
 	Status string `json:"status"`
 }
 
-type getStatusResponse struct {
+type getStatusHandlerResponse struct {
 	Nodes []*nodeStatus `json:"nodes"`
 }
 
 func getStatusHandler(s *Server, _ *fiber.Ctx) (interface{}, int, error) {
 	nodeStatuses := make([]*nodeStatus, 0)
 
-	for id, node := range s.nodes {
+	for id, cmd := range s.nodesCommands {
 		nodeStatuses = append(nodeStatuses, &nodeStatus{
 			ID:     id,
 			Chain:  s.chain,
-			Status: node.Status().String(),
+			Port:   cmd.config.Port,
+			Status: cmd.node.Status().String(),
 		})
 	}
 
-	return &getStatusResponse{
+	return &getStatusHandlerResponse{
 		Nodes: nodeStatuses,
 	}, fiber.StatusOK, nil
 }
