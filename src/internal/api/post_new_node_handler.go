@@ -17,11 +17,11 @@ type postNewNodeHandlerResponse struct {
 
 func postNewNodeHandler(s *Server, _ *fiber.Ctx) (interface{}, int, error) {
 	id := s.idGenerator()
-	nodesRunning := len(s.nodesCommands)
-	newNodePort := s.nodeConfig.Port + nodesRunning
+	s.nodeConfig.Port++
+
 	cmd := command.New(
 		"ganache",
-		"-p", fmt.Sprintf("%d", newNodePort),
+		"-p", fmt.Sprintf("%d", s.nodeConfig.Port),
 		"--host", s.nodeConfig.Host,
 		"--db", fmt.Sprintf("%s/%d", s.nodeConfig.BaseChainDataPath, len(s.nodesCommands)),
 		"--fork", s.nodeConfig.BootsrapNodeURL,
@@ -36,7 +36,7 @@ func postNewNodeHandler(s *Server, _ *fiber.Ctx) (interface{}, int, error) {
 		node: cmd,
 		config: &NodeConfig{
 			Host:              s.nodeConfig.Host,
-			Port:              newNodePort,
+			Port:              s.nodeConfig.Port,
 			BaseChainDataPath: s.nodeConfig.DatabasePath,
 			BootsrapNodeURL:   s.nodeConfig.BootsrapNodeURL,
 		},
@@ -45,7 +45,7 @@ func postNewNodeHandler(s *Server, _ *fiber.Ctx) (interface{}, int, error) {
 	return &postNewNodeHandlerResponse{
 		ID:     id,
 		Chain:  s.chain,
-		Port:   newNodePort,
+		Port:   s.nodeConfig.Port,
 		Status: cmd.Status().String(),
 	}, fiber.StatusCreated, nil
 }
