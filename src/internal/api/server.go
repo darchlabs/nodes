@@ -15,47 +15,71 @@ type ServerConfig struct {
 	Port        string
 	Chain       string
 	IDGenerator IDGenerator
-	Command     *command.Command
+	NodeConfig  *NodeConfig
+}
+
+type NodeConfig struct {
+	Host              string
+	Port              int
+	DatabasePath      string
+	BaseChainDataPath string
+	BootsrapNodeURL   string
 }
 
 type Server struct {
-	server       *fiber.App
-	port         string
-	cmd          *command.Command
-	nodes        map[string]*command.Command
-	idGenerator  IDGenerator
-	masterNodeID string
-	chain        string
+	server      *fiber.App
+	idGenerator IDGenerator
+	port        string
+
+	nodeConfig    NodeConfig
+	nodesCommands map[string]*nodeCommand
+	masterNodeID  string
+	chain         string
+}
+
+type nodeCommand struct {
+	node   *command.Command
+	config *NodeConfig
 }
 
 func NewServer(config *ServerConfig) *Server {
 	id := config.IDGenerator()
+	cmd := command.New(
+		"ganache",
+		"-p", fmt.Sprintf("%d", config.NodeConfig.Port),
+		"--host", config.NodeConfig.Host,
+		"--db", config.NodeConfig.BaseChainDataPath,
+		"--fork", config.NodeConfig.BootsrapNodeURL,
+	)
 
 	return &Server{
 		server:       fiber.New(),
+		idGenerator:  config.IDGenerator,
 		port:         config.Port,
 		chain:        config.Chain,
-		idGenerator:  config.IDGenerator,
+		nodeConfig:   *config.NodeConfig,
 		masterNodeID: id,
-		nodes: map[string]*command.Command{
-			id: config.Command,
+		nodesCommands: map[string]*nodeCommand{
+			id: &nodeCommand{
+				node:   cmd,
+				config: config.NodeConfig,
+			},
 		},
-		cmd: config.Command,
 	}
 }
 
 func (s *Server) Start() error {
-	cmd, ok := s.nodes[s.masterNodeID]
+	cmd, ok := s.nodesCommands[s.masterNodeID]
 	if !ok {
 		return errors.New("api: Server.Start s.cmd.nodes not found")
 	}
 
-	err := cmd.Start(s.masterNodeID)
+	err := cmd.node.Start(s.masterNodeID)
 	if err != nil {
-		return errors.Wrap(err, "api: Server.Start s.cmd.nodes not found")
+		return errors.Wrap(err, "api: Server.Start cmd.node.start error")
 	}
 
-	log.Printf("Master %s-node is %s with id %s\n", s.chain, s.cmd.Status(), s.masterNodeID)
+	log.Printf("Master %s-node is %s with id %s\n", s.chain, cmd.node.Status(), s.masterNodeID)
 
 	go func() {
 		// route endpoints

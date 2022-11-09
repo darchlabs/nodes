@@ -20,15 +20,15 @@ func main() {
 	log.Printf("Starting [darch %s node]\n", conf.Chain)
 
 	server := api.NewServer(&api.ServerConfig{
+		IDGenerator: uuid.NewString,
 		Port:        conf.ApiServerPort,
 		Chain:       conf.Chain,
-		IDGenerator: uuid.NewString,
-		Command: command.New(
-			"ganache",
-			"--host", "0.0.0.0",
-			"--db", conf.BaseChainDataPath,
-			"--fork", fmt.Sprintf("%s@%s", conf.NodeURL, conf.BlockNumber),
-		),
+		NodeConfig: &api.NodeConfig{
+			Host:            "0.0.0.0",
+			Port:            8545,
+			DatabasePath:    conf.BaseChainDataPath,
+			BootsrapNodeURL: fmt.Sprintf("%s@%s", conf.NodeURL, conf.BlockNumber),
+		},
 	})
 
 	err = server.Start()
