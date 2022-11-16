@@ -74,9 +74,14 @@ func (s *Server) Start() error {
 		return errors.New("api: Server.Start s.cmd.nodes not found")
 	}
 
-	err := cmd.node.Start(s.masterNodeID)
+	err := cmd.node.StreamOutput(s.masterNodeID)
 	if err != nil {
-		return errors.Wrap(err, "api: Server.Start cmd.node.start error")
+		return errors.Wrap(err, "api: Server.Start cmd.node.StreamOutput error")
+	}
+
+	err = cmd.node.Start()
+	if err != nil {
+		return errors.Wrap(err, "api: Server.Start cmd.node.Start error")
 	}
 
 	log.Printf("Master %s-node is %s with id %s\n", s.chain, cmd.node.Status(), s.masterNodeID)

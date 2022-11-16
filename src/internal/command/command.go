@@ -174,9 +174,7 @@ func (c *Command) streamOutputWithPrefix(prefix string, rc io.ReadCloser) {
 	}
 }
 
-// Start starts the process and pipes the command's output to the log file.
-// If at any point there is an error it also closes the file if exists.
-func (c *Command) Start(id string) error {
+func (c *Command) StreamOutput(id string) error {
 	pipe, err := c.Cmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -190,6 +188,12 @@ func (c *Command) Start(id string) error {
 	go c.streamOutputWithPrefix(fmt.Sprintf("STDOUT/%s", id), pipe)
 	go c.streamOutputWithPrefix(fmt.Sprintf("STDERR/%s", id), pipeErr)
 
+	return nil
+}
+
+// Start starts the process and pipes the command's output to the log file.
+// If at any point there is an error it also closes the file if exists.
+func (c *Command) Start() error {
 	if err := c.Cmd.Start(); err != nil {
 		c.SetStatus(StatusBootingError)
 		return err

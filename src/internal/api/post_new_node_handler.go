@@ -27,7 +27,12 @@ func postNewNodeHandler(s *Server, _ *fiber.Ctx) (interface{}, int, error) {
 		"--fork", s.nodeConfig.BootsrapNodeURL,
 	)
 
-	err := cmd.Start(id)
+	err := cmd.StreamOutput(id)
+	if err != nil {
+		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: portNewNodeHandler cmd.StreamOutput error")
+	}
+
+	err = cmd.Start()
 	if err != nil {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: portNewNodeHandler cmd.Start error")
 	}
