@@ -7,7 +7,7 @@ services:
       - ./node.env
     restart: on-failure
     ports:
-      - "8545:8545"
+      - "8545-8595:8545-8595"
       - "6969:6969"
     volumes:
       - ../data/ethereum:/home/node/data:rw

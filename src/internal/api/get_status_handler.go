@@ -4,15 +4,30 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type getStatusResponse struct {
+type nodeStatus struct {
+	ID     string `json:"id"`
 	Chain  string `json:"chain"`
+	Port   int    `json:"port"`
 	Status string `json:"status"`
 }
 
+type getStatusHandlerResponse struct {
+	Nodes []*nodeStatus `json:"nodes"`
+}
+
 func getStatusHandler(s *Server, _ *fiber.Ctx) (interface{}, int, error) {
-	status := s.cmd.Status()
-	return &getStatusResponse{
-		Chain:  s.chain,
-		Status: status.String(),
+	nodeStatuses := make([]*nodeStatus, 0)
+
+	for id, cmd := range s.nodesCommands {
+		nodeStatuses = append(nodeStatuses, &nodeStatus{
+			ID:     id,
+			Chain:  s.chain,
+			Port:   cmd.config.Port,
+			Status: cmd.node.Status().String(),
+		})
+	}
+
+	return &getStatusHandlerResponse{
+		Nodes: nodeStatuses,
 	}, fiber.StatusOK, nil
 }
