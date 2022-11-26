@@ -11,4 +11,10 @@ services:
       - "6969:6969"
     volumes:
       - ../data/ethereum:/home/node/data:rw
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - ../data/ethereum/redis:/data-redis:rw
 
