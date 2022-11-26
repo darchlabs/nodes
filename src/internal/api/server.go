@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/darchlabs/nodes/src/internal/command"
+	"github.com/darchlabs/nodes/src/internal/storage"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
 )
@@ -42,6 +43,11 @@ type nodeCommand struct {
 	config *NodeConfig
 }
 
+type Context struct {
+	server *Server
+	store  storage.DataStore
+}
+
 func NewServer(config *ServerConfig) *Server {
 	id := config.IDGenerator()
 	cmd := command.New(
@@ -68,7 +74,7 @@ func NewServer(config *ServerConfig) *Server {
 	}
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(store storage.DataStore) error {
 	cmd, ok := s.nodesCommands[s.masterNodeID]
 	if !ok {
 		return errors.New("api: Server.Start s.cmd.nodes not found")
@@ -87,8 +93,15 @@ func (s *Server) Start() error {
 	log.Printf("Master %s-node is %s with id %s\n", s.chain, cmd.node.Status(), s.masterNodeID)
 
 	go func() {
+		ctx := &Context{
+			server: s,
+			store:  store,
+		}
 		// route endpoints
-		routeNodeEndpoints("/nodes", s)
+		routeNodeEndpoints("/nodes", ctx)
+
+		// proxy requests for node
+		s.server.Post("/jsonrpc/:node_id", handleFunc(ctx, proxyRpcHandler))
 
 		// sever listen
 		err := s.server.Listen(fmt.Sprintf(":%s", s.port))
@@ -100,15 +113,19 @@ func (s *Server) Start() error {
 	return nil
 }
 
-type handler func(*Server, *fiber.Ctx) (interface{}, int, error)
+type handler func(*Context, *fiber.Ctx) (interface{}, int, error)
 
-func handleFunc(s *Server, fn handler) func(*fiber.Ctx) error {
+func handleFunc(ctx *Context, fn handler) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		payload, statusCode, err := fn(s, c)
+		payload, statusCode, err := fn(ctx, c)
 		if err != nil {
 			return c.Status(statusCode).JSON(map[string]string{
 				"error": err.Error(),
 			})
+		}
+
+		if statusCode == statusAlreadyProxied {
+			return nil
 		}
 
 		return c.Status(statusCode).JSON(payload)

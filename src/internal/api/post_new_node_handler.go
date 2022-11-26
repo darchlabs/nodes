@@ -15,16 +15,16 @@ type postNewNodeHandlerResponse struct {
 	Status string `json:"status"`
 }
 
-func postNewNodeHandler(s *Server, _ *fiber.Ctx) (interface{}, int, error) {
-	id := s.idGenerator()
-	s.nodeConfig.Port++
+func postNewNodeHandler(ctx *Context, _ *fiber.Ctx) (interface{}, int, error) {
+	id := ctx.server.idGenerator()
+	ctx.server.nodeConfig.Port++
 
 	cmd := command.New(
 		"ganache",
-		"-p", fmt.Sprintf("%d", s.nodeConfig.Port),
-		"--host", s.nodeConfig.Host,
-		"--db", fmt.Sprintf("%s/%d", s.nodeConfig.BaseChainDataPath, len(s.nodesCommands)),
-		"--fork", s.nodeConfig.BootsrapNodeURL,
+		"-p", fmt.Sprintf("%d", ctx.server.nodeConfig.Port),
+		"--host", ctx.server.nodeConfig.Host,
+		"--db", fmt.Sprintf("%s/%d", ctx.server.nodeConfig.BaseChainDataPath, len(ctx.server.nodesCommands)),
+		"--fork", ctx.server.nodeConfig.BootsrapNodeURL,
 	)
 
 	err := cmd.StreamOutput(id)
@@ -37,20 +37,20 @@ func postNewNodeHandler(s *Server, _ *fiber.Ctx) (interface{}, int, error) {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: portNewNodeHandler cmd.Start error")
 	}
 
-	s.nodesCommands[id] = &nodeCommand{
+	ctx.server.nodesCommands[id] = &nodeCommand{
 		node: cmd,
 		config: &NodeConfig{
-			Host:              s.nodeConfig.Host,
-			Port:              s.nodeConfig.Port,
-			BaseChainDataPath: s.nodeConfig.DatabasePath,
-			BootsrapNodeURL:   s.nodeConfig.BootsrapNodeURL,
+			Host:              ctx.server.nodeConfig.Host,
+			Port:              ctx.server.nodeConfig.Port,
+			BaseChainDataPath: ctx.server.nodeConfig.DatabasePath,
+			BootsrapNodeURL:   ctx.server.nodeConfig.BootsrapNodeURL,
 		},
 	}
 
 	return &postNewNodeHandlerResponse{
 		ID:     id,
-		Chain:  s.chain,
-		Port:   s.nodeConfig.Port,
+		Chain:  ctx.server.chain,
+		Port:   ctx.server.nodeConfig.Port,
 		Status: cmd.Status().String(),
 	}, fiber.StatusCreated, nil
 }

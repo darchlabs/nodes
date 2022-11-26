@@ -15,13 +15,13 @@ type getStatusHandlerResponse struct {
 	Nodes []*nodeStatus `json:"nodes"`
 }
 
-func getStatusHandler(s *Server, _ *fiber.Ctx) (interface{}, int, error) {
+func getStatusHandler(ctx *Context, _ *fiber.Ctx) (interface{}, int, error) {
 	nodeStatuses := make([]*nodeStatus, 0)
 
-	for id, cmd := range s.nodesCommands {
+	for id, cmd := range ctx.server.nodesCommands {
 		nodeStatuses = append(nodeStatuses, &nodeStatus{
 			ID:     id,
-			Chain:  s.chain,
+			Chain:  ctx.server.chain,
 			Port:   cmd.config.Port,
 			Status: cmd.node.Status().String(),
 		})

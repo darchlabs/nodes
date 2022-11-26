@@ -9,16 +9,16 @@ type deleteNodeHandlerRequest struct {
 	NodeID string `json:"node_id"`
 }
 
-func deleteNodeHandler(s *Server, c *fiber.Ctx) (interface{}, int, error) {
+func deleteNodeHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 	var req deleteNodeHandlerRequest
 	err := c.BodyParser(&req)
 	if err != nil {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: deleteNodeHandler c.BodyParser error")
 	}
 
-	cmd, ok := s.nodesCommands[req.NodeID]
+	cmd, ok := ctx.server.nodesCommands[req.NodeID]
 	if !ok {
-		return nil, fiber.StatusNotFound, errors.Wrap(err, "api: deleteNodeHandler s.nodeConfig unrecognized id")
+		return nil, fiber.StatusNotFound, errors.Wrap(err, "api: deleteNodeHandler ctx.server.nodeConfig unrecognized id")
 	}
 
 	err = cmd.node.Stop()
@@ -26,6 +26,6 @@ func deleteNodeHandler(s *Server, c *fiber.Ctx) (interface{}, int, error) {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: deleteNodeHandler node.cmd.Stop error")
 	}
 
-	delete(s.nodesCommands, req.NodeID)
+	delete(ctx.server.nodesCommands, req.NodeID)
 	return nil, fiber.StatusOK, nil
 }

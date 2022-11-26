@@ -30,7 +30,7 @@ type postActionHandlerResponse struct {
 	Status string `json:"status"`
 }
 
-func postActionHandler(s *Server, c *fiber.Ctx) (interface{}, int, error) {
+func postActionHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 	var req postActionHandlerRequest
 	err := c.BodyParser(&req)
 	if err != nil {
@@ -42,9 +42,9 @@ func postActionHandler(s *Server, c *fiber.Ctx) (interface{}, int, error) {
 		return nil, fiber.StatusNotFound, errors.Wrap(ErrNotFound, "api: postActionHandler unrecognized status")
 	}
 
-	cmd, ok := s.nodesCommands[req.NodeID]
+	cmd, ok := ctx.server.nodesCommands[req.NodeID]
 	if !ok {
-		return nil, fiber.StatusNotFound, errors.Wrap(ErrNotFound, "api: postActionHandler s.nodesCommands unrecognized id")
+		return nil, fiber.StatusNotFound, errors.Wrap(ErrNotFound, "api: postActionHandler ctx.server.nodesCommands unrecognized id")
 	}
 
 	nodeStatus := cmd.node.Status()
@@ -76,8 +76,8 @@ func postActionHandler(s *Server, c *fiber.Ctx) (interface{}, int, error) {
 			return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: postActionHandler cmd.node.Stop at restarting error")
 		}
 
-		s.nodesCommands[req.NodeID].node = cmd.node.Clone()
-		err = s.nodesCommands[req.NodeID].node.Start()
+		ctx.server.nodesCommands[req.NodeID].node = cmd.node.Clone()
+		err = ctx.server.nodesCommands[req.NodeID].node.Start()
 		if err != nil {
 			return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: postActionHandler cmd.node.Start at restarting error")
 		}
