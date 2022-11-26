@@ -7,6 +7,7 @@ import (
 	"github.com/darchlabs/nodes/src/config"
 	"github.com/darchlabs/nodes/src/internal/api"
 	"github.com/darchlabs/nodes/src/internal/command"
+	"github.com/darchlabs/nodes/src/internal/storage"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -15,6 +16,10 @@ func main() {
 	fmt.Println("------ Starting node runner")
 	var conf config.Config
 	err := envconfig.Process("", &conf)
+	check(err)
+
+	log.Printf("Database connection [darch %s node] done\n", conf.Chain)
+	store, err := storage.NewDataStore(conf.RedisURL)
 	check(err)
 
 	log.Printf("Starting [darch %s node]\n", conf.Chain)
@@ -31,7 +36,7 @@ func main() {
 		},
 	})
 
-	err = server.Start()
+	err = server.Start(store)
 	check(err)
 
 	// listen interrupt
