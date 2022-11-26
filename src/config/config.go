@@ -13,4 +13,7 @@ type Config struct {
 	ApiServerHost string `envconfig:"api_server_host" default:"0.0.0.0."`
 	ApiServerPort string `envconfig:"api_server_port" default:"6969"`
 	MasterURL     string `envconfig:"-" default:"http://master.darchlabs.com/nodes/status"`
+
+	// database config
+	RedisURL string `envconfig:"redis_url" required:"true"`
 }
