@@ -22,7 +22,6 @@ type ServerConfig struct {
 type NodeConfig struct {
 	Host              string
 	Port              int
-	DatabasePath      string
 	BaseChainDataPath string
 	BootsrapNodeURL   string
 }
@@ -98,7 +97,7 @@ func (s *Server) Start(store storage.DataStore) error {
 			store:  store,
 		}
 		// route endpoints
-		routeNodeEndpoints("/nodes", ctx)
+		routeNodeEndpoints("/api/v1/nodes", ctx)
 
 		// proxy requests for node
 		s.server.Post("/jsonrpc/:node_id", handleFunc(ctx, proxyRpcHandler))
