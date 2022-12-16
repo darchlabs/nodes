@@ -1,12 +1,17 @@
 package api
 
 import (
-	"fmt"
+	"net/http"
 
-	"github.com/darchlabs/nodes/src/internal/command"
+	"github.com/darchlabs/nodes/src/internal/manager"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
 )
+
+type postNewNodeHandlerRequest struct {
+	Network         string `json:"network"`
+	FromBlockNumber int64  `json:"from_block_number"`
+}
 
 type postNewNodeHandlerResponse struct {
 	ID     string `json:"id"`
@@ -15,42 +20,25 @@ type postNewNodeHandlerResponse struct {
 	Status string `json:"status"`
 }
 
-func postNewNodeHandler(s *Server, _ *fiber.Ctx) (interface{}, int, error) {
-	id := s.idGenerator()
-	s.nodeConfig.Port++
-
-	cmd := command.New(
-		"ganache",
-		"-p", fmt.Sprintf("%d", s.nodeConfig.Port),
-		"--host", s.nodeConfig.Host,
-		"--db", fmt.Sprintf("%s/%d", s.nodeConfig.BaseChainDataPath, len(s.nodesCommands)),
-		"--fork", s.nodeConfig.BootsrapNodeURL,
-	)
-
-	err := cmd.StreamOutput(id)
+func postNewNodeHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
+	var req postNewNodeHandlerRequest
+	err := c.BodyParser(&req)
 	if err != nil {
-		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: portNewNodeHandler cmd.StreamOutput error")
+		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: postNewNodeHandler c.BodyParser")
 	}
 
-	err = cmd.Start()
+	nodeCmd, err := ctx.server.nodesManager.CreateNode(&manager.CreateNodeConfig{
+		Network:         req.Network,
+		FromBlockNumber: req.FromBlockNumber,
+	})
 	if err != nil {
-		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: portNewNodeHandler cmd.Start error")
-	}
-
-	s.nodesCommands[id] = &nodeCommand{
-		node: cmd,
-		config: &NodeConfig{
-			Host:              s.nodeConfig.Host,
-			Port:              s.nodeConfig.Port,
-			BaseChainDataPath: s.nodeConfig.DatabasePath,
-			BootsrapNodeURL:   s.nodeConfig.BootsrapNodeURL,
-		},
+		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: postNewNodeHandler ctx.server.nodesManager.CreateNode error")
 	}
 
 	return &postNewNodeHandlerResponse{
-		ID:     id,
-		Chain:  s.chain,
-		Port:   s.nodeConfig.Port,
-		Status: cmd.Status().String(),
+		ID:     nodeCmd.ID,
+		Chain:  req.Network,
+		Port:   nodeCmd.Config.Port,
+		Status: nodeCmd.Node.Status().String(),
 	}, fiber.StatusCreated, nil
 }
