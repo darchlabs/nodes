@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/darchlabs/nodes/src/internal/command"
+	"github.com/darchlabs/nodes/src/internal/manager"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
 )
@@ -42,12 +43,15 @@ func postActionHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 		return nil, fiber.StatusNotFound, errors.Wrap(ErrNotFound, "api: postActionHandler unrecognized status")
 	}
 
-	cmd, ok := ctx.server.nodesCommands[req.NodeID]
-	if !ok {
+	cmd, err := ctx.server.nodesManager.Get(req.NodeID)
+	if errors.Is(err, manager.ErrNodeNotFound) {
 		return nil, fiber.StatusNotFound, errors.Wrap(ErrNotFound, "api: postActionHandler ctx.server.nodesCommands unrecognized id")
 	}
+	if err != nil {
+		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: postActionHandler ctx.server.nodesManager.Get error")
+	}
 
-	nodeStatus := cmd.node.Status()
+	nodeStatus := cmd.Node.Status()
 
 	switch req.Action {
 	case actionStart:
@@ -55,7 +59,7 @@ func postActionHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 			return nil, fiber.StatusOK, nil
 		}
 
-		err = cmd.node.Start()
+		err = cmd.Node.Start()
 		if err != nil {
 			return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: postActionHandler cmd.node.Start at starting error")
 		}
@@ -65,19 +69,21 @@ func postActionHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 			return nil, fiber.StatusOK, nil
 		}
 
-		err = cmd.node.Stop()
+		err = cmd.Node.Stop()
 		if err != nil {
 			return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: postActionHandler cmd.node.Stop at stopping error")
 		}
 
 	case actionRestart:
-		err = cmd.node.Stop()
+		err = cmd.Node.Stop()
 		if err != nil {
 			return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: postActionHandler cmd.node.Stop at restarting error")
 		}
 
-		ctx.server.nodesCommands[req.NodeID].node = cmd.node.Clone()
-		err = ctx.server.nodesCommands[req.NodeID].node.Start()
+		node := cmd.Node.Clone()
+		cmd.Node = node
+		ctx.server.nodesManager.Put(cmd)
+		err = cmd.Node.Start()
 		if err != nil {
 			return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: postActionHandler cmd.node.Start at restarting error")
 		}

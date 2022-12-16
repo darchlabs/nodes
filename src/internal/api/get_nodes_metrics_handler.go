@@ -21,11 +21,11 @@ type nodeMetric struct {
 func getNodesMetricsHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 	nodeMetrics := make(map[string][]*nodeMetric)
 
-	for nodeID := range ctx.server.nodesCommands {
+	for _, nodeCmd := range ctx.server.nodesManager.GetAll() {
 		metric := make([]*nodeMetric, 0)
 		for method := range config.ETHNodesMethods {
 			m, err := ctx.store.GetMethodMetric(context.Background(), &storage.GetMethodMetricInput{
-				NodeID: nodeID,
+				NodeID: nodeCmd.ID,
 				Method: method,
 			})
 			if err != nil {
@@ -38,7 +38,7 @@ func getNodesMetricsHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error
 			})
 		}
 
-		nodeMetrics[nodeID] = metric
+		nodeMetrics[nodeCmd.ID] = metric
 	}
 
 	return &getNodesMetricsHandlerResponse{

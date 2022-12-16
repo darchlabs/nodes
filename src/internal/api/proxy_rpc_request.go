@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/darchlabs/nodes/src/internal/manager"
 	"github.com/darchlabs/nodes/src/internal/storage"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
@@ -28,13 +29,16 @@ func proxyRpcHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 	nodeID := c.Params("node_id")
 	log.Println("request forwarded for for node", nodeID)
 
-	node, ok := ctx.server.nodesCommands[nodeID]
-	if !ok {
+	cmd, err := ctx.server.nodesManager.Get(nodeID)
+	if errors.Is(err, manager.ErrNodeNotFound) {
 		return nil, fiber.StatusNotFound, errors.Wrap(ErrNotFound, "api: proxyRpcHandler unrecognized node_id")
+	}
+	if err != nil {
+		return nil, fiber.StatusInternalServerError, errors.Wrap(ErrNotFound, "api: proxyRpcHandler ctx.server.nodesManager.Get error")
 	}
 
 	var req proxyRpcHandlerRequest
-	err := c.BodyParser(&req)
+	err = c.BodyParser(&req)
 	if err != nil {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: proxyRpcHandler c.BodyParser error")
 	}
@@ -54,7 +58,7 @@ func proxyRpcHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 		}
 	}()
 
-	nodeURL := fmt.Sprintf("http://0.0.0.0:%d/", node.config.Port)
+	nodeURL := fmt.Sprintf("http://0.0.0.0:%d/", cmd.Config.Port)
 	request, err := http.NewRequest(http.MethodPost, nodeURL, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: proxyRpcHandler http.NewRequest error")
