@@ -7,6 +7,7 @@ import (
 	"github.com/darchlabs/nodes/src/config"
 	"github.com/darchlabs/nodes/src/internal/api"
 	"github.com/darchlabs/nodes/src/internal/command"
+	"github.com/darchlabs/nodes/src/internal/manager"
 	"github.com/darchlabs/nodes/src/internal/storage"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
@@ -18,22 +19,20 @@ func main() {
 	err := envconfig.Process("", &conf)
 	check(err)
 
-	log.Printf("Database connection [darch %s node] done\n", conf.Chain)
+	log.Printf("Database connection [darch node] done\n")
 	store, err := storage.NewDataStore(conf.RedisURL)
 	check(err)
 
-	log.Printf("Starting [darch %s node]\n", conf.Chain)
+	log.Printf("Starting [darch node]\n")
 
 	server := api.NewServer(&api.ServerConfig{
-		IDGenerator: uuid.NewString,
-		Port:        conf.ApiServerPort,
-		Chain:       conf.Chain,
-		NodeConfig: &api.NodeConfig{
-			Host:            "0.0.0.0",
-			Port:            8545,
-			DatabasePath:    conf.BaseChainDataPath,
-			BootsrapNodeURL: fmt.Sprintf("%s@%s", conf.NodeURL, conf.BlockNumber),
-		},
+		Port:              conf.ApiServerPort,
+		BootstrapNodesURL: conf.NetworksURL,
+		Manager: manager.New(&manager.Config{
+			IDGenerator:       uuid.NewString,
+			BootstrapNodesURL: conf.NetworksURL,
+			BasePathDatabase:  conf.BasePathDatabase,
+		}),
 	})
 
 	err = server.Start(store)
