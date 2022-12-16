@@ -29,4 +29,4 @@ build-node-runner:
 
 run-node-local:
 	@echo "[run node local]"
-	@export $$(cat $(CHAIN)/node_local.env) && nodemon --exec go run src/cmd/$(CHAIN)/main.go
+	@export $$(cat $(CHAIN)/node.env) && nodemon --exec go run src/cmd/$(CHAIN)/main.go
