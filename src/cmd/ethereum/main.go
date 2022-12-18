@@ -9,6 +9,7 @@ import (
 	"github.com/darchlabs/nodes/src/internal/command"
 	"github.com/darchlabs/nodes/src/internal/manager"
 	"github.com/darchlabs/nodes/src/internal/storage"
+	"github.com/darchlabs/nodes/src/pkg/namer"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -23,18 +24,21 @@ func main() {
 	store, err := storage.NewDataStore(conf.RedisURL)
 	check(err)
 
-	log.Printf("Starting [darch node]\n")
+	nameGenerator, err := namer.New()
+	check(err)
 
 	server := api.NewServer(&api.ServerConfig{
 		Port:              conf.ApiServerPort,
 		BootstrapNodesURL: conf.NetworksURL,
 		Manager: manager.New(&manager.Config{
 			IDGenerator:       uuid.NewString,
+			NameGenerator:     nameGenerator,
 			BootstrapNodesURL: conf.NetworksURL,
 			BasePathDatabase:  conf.BasePathDatabase,
 		}),
 	})
 
+	log.Printf("Starting [darch node]\n")
 	err = server.Start(store)
 	check(err)
 
