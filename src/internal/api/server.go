@@ -46,7 +46,7 @@ func (s *Server) Start(store storage.DataStore) error {
 		routeNodeEndpoints("/api/v1/nodes", ctx)
 
 		// proxy requests for node
-		s.server.Post("/jsonrpc/:node_id", handleFunc(ctx, proxyRpcHandler))
+		s.server.All("jsonrpc/:node_id", proxyFunc(ctx))
 
 		// sever listen
 		fmt.Println("running")

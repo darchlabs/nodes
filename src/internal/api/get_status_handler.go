@@ -6,6 +6,7 @@ import (
 
 type nodeStatus struct {
 	ID              string `json:"id"`
+	Name            string `json:"name"`
 	Chain           string `json:"chain"`
 	Port            int    `json:"port"`
 	FromBlockNumber int64  `json:"from_block_number"`
@@ -19,15 +20,15 @@ type getStatusHandlerResponse struct {
 func getStatusHandler(ctx *Context, _ *fiber.Ctx) (interface{}, int, error) {
 	nodeStatuses := make([]*nodeStatus, 0)
 
-	nodeCommands := ctx.server.nodesManager.GetAll()
+	nodeInstances := ctx.server.nodesManager.GetAll()
 
-	for _, nodeCmd := range nodeCommands {
+	for _, instance := range nodeInstances {
 		nodeStatuses = append(nodeStatuses, &nodeStatus{
-			ID:              nodeCmd.ID,
-			Chain:           nodeCmd.Config.Network,
-			Port:            nodeCmd.Config.Port,
-			Status:          nodeCmd.Node.Status().String(),
-			FromBlockNumber: nodeCmd.Config.FromBlockNumber,
+			ID:              instance.ID,
+			Chain:           instance.Config.Network,
+			Port:            instance.Config.Port,
+			Status:          instance.Node.Status().String(),
+			FromBlockNumber: instance.Config.FromBlockNumber,
 		})
 	}
 

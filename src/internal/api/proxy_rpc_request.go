@@ -21,7 +21,7 @@ type proxyRpcHandlerRequest struct {
 	JSONRpc string        `json:"jsonrpc"`
 	Method  string        `json:"method"`
 	Params  []interface{} `json:"params"`
-	ID      int           `json:"id"`
+	ID      interface{}   `json:"id"`
 }
 
 func proxyRpcHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
