@@ -15,6 +15,7 @@ type postNewNodeHandlerRequest struct {
 
 type postNewNodeHandlerResponse struct {
 	ID     string `json:"id"`
+	Name   string `json:"name"`
 	Chain  string `json:"chain"`
 	Port   int    `json:"port"`
 	Status string `json:"status"`
@@ -27,7 +28,7 @@ func postNewNodeHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: postNewNodeHandler c.BodyParser")
 	}
 
-	nodeCmd, err := ctx.server.nodesManager.CreateNode(&manager.CreateNodeConfig{
+	nodeInstance, err := ctx.server.nodesManager.CreateNode(&manager.CreateNodeConfig{
 		Network:         req.Network,
 		FromBlockNumber: req.FromBlockNumber,
 	})
@@ -36,9 +37,10 @@ func postNewNodeHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 	}
 
 	return &postNewNodeHandlerResponse{
-		ID:     nodeCmd.ID,
+		ID:     nodeInstance.ID,
+		Name:   nodeInstance.Name,
 		Chain:  req.Network,
-		Port:   nodeCmd.Config.Port,
-		Status: nodeCmd.Node.Status().String(),
+		Port:   nodeInstance.Config.Port,
+		Status: nodeInstance.Node.Status().String(),
 	}, fiber.StatusCreated, nil
 }

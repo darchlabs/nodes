@@ -3,7 +3,7 @@ module github.com/darchlabs/nodes
 go 1.18
 
 require (
-	github.com/gofiber/fiber/v2 v2.39.0
+	github.com/gofiber/fiber/v2 v2.40.1
 	github.com/kelseyhightower/envconfig v1.4.0
 )
 
@@ -14,6 +14,7 @@ require (
 	github.com/go-redis/redis/v9 v9.0.0-rc.1 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/klauspost/compress v1.15.12 // indirect
+	github.com/lucasepe/codename v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect

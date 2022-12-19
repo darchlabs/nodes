@@ -13,8 +13,9 @@ type CreateNodeConfig struct {
 	FromBlockNumber int64
 }
 
-func (m *Manager) CreateNode(config *CreateNodeConfig) (*NodeCommand, error) {
+func (m *Manager) CreateNode(config *CreateNodeConfig) (*NodeInstance, error) {
 	id := m.idGenerator()
+	name := m.nameGenerator.Generate()
 	bootstrapURL, ok := m.boostrapNodesURL[config.Network]
 	if !ok {
 		return nil, errors.New("manager: Manager.CreateNode network not supported")
@@ -54,15 +55,16 @@ func (m *Manager) CreateNode(config *CreateNodeConfig) (*NodeCommand, error) {
 		return nil, errors.Wrap(err, "manager: Manager.CreateNode cmd.Start error")
 	}
 
-	nodeCmd := &NodeCommand{
+	nodeInstance := &NodeInstance{
 		ID:     id,
+		Name:   name,
 		Node:   cmd,
 		Config: nodeConfig,
 	}
-	m.nodes[id] = nodeCmd
+	m.nodes[id] = nodeInstance
 
 	m.currentAssignablePort++
-	return nodeCmd, nil
+	return nodeInstance, nil
 }
 
 func existDir(path string) bool {
