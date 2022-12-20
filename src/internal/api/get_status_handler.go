@@ -9,7 +9,7 @@ type nodeStatus struct {
 	Name            string `json:"name"`
 	Chain           string `json:"chain"`
 	Port            int    `json:"port"`
-	FromBlockNumber int64  `json:"from_block_number"`
+	FromBlockNumber int64  `json:"fromBlockNumber"`
 	Status          string `json:"status"`
 }
 

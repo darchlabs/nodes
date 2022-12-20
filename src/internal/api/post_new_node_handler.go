@@ -10,7 +10,7 @@ import (
 
 type postNewNodeHandlerRequest struct {
 	Network         string `json:"network"`
-	FromBlockNumber int64  `json:"from_block_number"`
+	FromBlockNumber int64  `json:"fromBlockNumber"`
 }
 
 type postNewNodeHandlerResponse struct {
