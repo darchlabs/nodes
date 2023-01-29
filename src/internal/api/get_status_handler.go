@@ -26,6 +26,7 @@ func getStatusHandler(ctx *Context, _ *fiber.Ctx) (interface{}, int, error) {
 		nodeStatuses = append(nodeStatuses, &nodeStatus{
 			ID:              instance.ID,
 			Chain:           instance.Config.Network,
+			Name:            instance.Name,
 			Port:            instance.Config.Port,
 			Status:          instance.Node.Status().String(),
 			FromBlockNumber: instance.Config.FromBlockNumber,
