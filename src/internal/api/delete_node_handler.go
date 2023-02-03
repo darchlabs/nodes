@@ -7,7 +7,7 @@ import (
 )
 
 type deleteNodeHandlerRequest struct {
-	NodeID string `json:"node_id"`
+	NodeID string `json:"nodeId"`
 }
 
 func deleteNodeHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {

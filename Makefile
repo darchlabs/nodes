@@ -30,3 +30,11 @@ build-node-runner:
 run-node-local:
 	@echo "[run node local]"
 	@export $$(cat $(CHAIN)/node.env) && nodemon --exec go run src/cmd/$(CHAIN)/main.go
+
+docker-login:
+	@echo "[docker] Login to docker..."
+	@docker login -u $(DOCKER_USER) -p $(DOCKER_PASS)
+
+docker: docker-login
+	@echo "[docker] pushing $(REGISTRY_URL)/$(SERVICE_NAME):$(VERSION)"
+	@docker buildx build --platform linux/amd64,linux/arm64 --push -t $(DOCKER_USER)/$(SERVICE_NAME):$(VERSION) .
