@@ -1,6 +1,10 @@
 package manager
 
-import "github.com/pkg/errors"
+import (
+	"sort"
+
+	"github.com/pkg/errors"
+)
 
 var ErrNodeNotFound = errors.New("node not found")
 
@@ -19,6 +23,10 @@ func (m *Manager) GetAll() []*NodeInstance {
 	for _, nodeCommand := range m.nodes {
 		nodes = append(nodes, nodeCommand)
 	}
+
+	sort.Slice(nodes, func(i, j int) bool {
+		return nodes[i].Config.CreatedAt.Before(nodes[j].Config.CreatedAt)
+	})
 
 	return nodes
 }

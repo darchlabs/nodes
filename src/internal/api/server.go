@@ -6,6 +6,7 @@ import (
 	"github.com/darchlabs/nodes/src/internal/manager"
 	"github.com/darchlabs/nodes/src/internal/storage"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 type ServerConfig struct {
@@ -29,6 +30,9 @@ type Context struct {
 
 func NewServer(config *ServerConfig) *Server {
 
+	server := fiber.New()
+	server.Use(cors.New())
+
 	return &Server{
 		server:       fiber.New(),
 		port:         config.Port,
@@ -44,6 +48,8 @@ func (s *Server) Start(store storage.DataStore) error {
 		}
 		// route endpoints
 		routeNodeEndpoints("/api/v1/nodes", ctx)
+
+		// cors
 
 		// proxy requests for node
 		s.server.All("jsonrpc/:node_id", proxyFunc(ctx))

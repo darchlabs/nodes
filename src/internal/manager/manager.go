@@ -2,6 +2,7 @@ package manager
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/darchlabs/nodes/src/internal/command"
 )
@@ -59,4 +60,5 @@ type NodeConfig struct {
 	BootsrapNodeURL   string
 	FromBlockNumber   int64
 	Label             string
+	CreatedAt         time.Time
 }

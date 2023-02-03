@@ -3,6 +3,7 @@ package manager
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/darchlabs/nodes/src/internal/command"
 	"github.com/pkg/errors"
@@ -43,6 +44,7 @@ func (m *Manager) CreateNode(config *CreateNodeConfig) (*NodeInstance, error) {
 		BaseChainDataPath: dbPath,
 		BootsrapNodeURL:   bootstrapURL,
 		FromBlockNumber:   config.FromBlockNumber,
+		CreatedAt:         time.Now(),
 	}
 	cmd := nodeRunner(nodeConfig)
 	err := cmd.StreamOutput(id)
