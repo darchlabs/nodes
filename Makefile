@@ -33,7 +33,7 @@ run-node-local:
 
 docker-login:
 	@echo "[docker] Login to docker..."
-	@docker login -u $(DOCKER_USER) -p $(DOCKER_PASS)
+	@docker login -u $(DOCKER_USER) --password-sting
 
 docker: docker-login
 	@echo "[docker] pushing $(REGISTRY_URL)/$(SERVICE_NAME):$(VERSION)"
