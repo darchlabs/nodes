@@ -6,7 +6,7 @@
 
 build-node:
 	@echo "[building node]"
-	@docker build -t $(CHAIN)-node -f ./$(CHAIN)/docker/Dockerfile --progress tty .
+	@docker build -t $(CHAIN)-node-gno -f ./$(CHAIN)/docker/Dockerfile --progress tty .
 	@echo "Build $(CHAIN) node docker image done ✔︎"
 
 build-node-pristine:
