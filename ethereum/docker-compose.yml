@@ -2,7 +2,7 @@ version: '3'
 
 services:
   ethereum-node:
-    image: ethereum-node # using image name tag
+    image: ethereum-node-gno # using image name tag
     env_file:
       - ./node.env
     restart: on-failure

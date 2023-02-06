@@ -1,3 +1,4 @@
+# 1st stage: clone gnoland --------------
 FROM ubuntu as gno
 
 WORKDIR home/gnolang
@@ -8,10 +9,10 @@ RUN apt-get -y install git
 
 RUN git clone https://github.com/gnolang/gno.git
 
-# gnobuilder
+# 2nd stage: build gnoland --------------
 FROM golang as gnobuilder
 
-WORKDIR /urs/src/gno
+WORKDIR /usr/src/gno
 
 COPY --from=gno home/gnolang/gno/. /usr/src/gno/.
 
@@ -19,53 +20,48 @@ COPY --from=gno home/gnolang/gno/. /usr/src/gno/.
 
 RUN go build -o build/gnoland cmd/gnoland/main.go
 
-## 1st stage: build golang ethereum runner
+## 3rd stage: build golang ethereum runner --------------
 FROM golang as builder
 
 WORKDIR /usr/src/app
 
 COPY ../../. .
 
-
-#COPY --from=gnobuilder /urs/src/gno /usr/src/gno
-COPY --from=gnobuilder /home/gnolang/gno /usr/src/gno
-
-
 RUN go build -o eth-runner src/cmd/ethereum/main.go
 
 CMD ["./eth-runner"]
 
-# ------ start
+# 4th stage: prepare container to run node --------
+FROM node
 
-# 2nd stage: prepare container to run node
-#FROM node
-
-#WORKDIR /home/node
+WORKDIR /home/node
 
 ## Environment var
 ### ENVIRONMENT
-#ARG ENVIRONMENT
-#ENV ENVIRONMENT ${ENVIRONMENT}
-## CHAIN
-#ARG CHAIN
-#ENV CHAIN ${CHAIN}
-## API_SERVER_PORT
-#ARG API_SERVER_PORT
-#ENV API_SERVER_PORT ${API_SERVER_PORT}
-## BASE_CHAIN_DATA_PATH
-#ARG BASE_CHAIN_DATA_PATH
-#ENV BASE_CHAIN_DATA_PATH ${BASE_CHAIN_DATA_PATH}
-## NODE_URL
-#ARG NODE_URL
-#ENV NODE_URL ${NODE_URL}
-## BLOCK_NUMBER
-#ARG BLOCK_NUMBER
-#ENV BLOCK_NUMBER ${BLOCK_NUMBER}
+ARG ENVIRONMENT
+ENV ENVIRONMENT ${ENVIRONMENT}
+# CHAIN
+ARG CHAIN
+ENV CHAIN ${CHAIN}
+# API_SERVER_PORT
+ARG API_SERVER_PORT
+ENV API_SERVER_PORT ${API_SERVER_PORT}
+# BASE_CHAIN_DATA_PATH
+ARG BASE_CHAIN_DATA_PATH
+ENV BASE_CHAIN_DATA_PATH ${BASE_CHAIN_DATA_PATH}
+# NODE_URL
+ARG NODE_URL
+ENV NODE_URL ${NODE_URL}
+# BLOCK_NUMBER
+ARG BLOCK_NUMBER
+ENV BLOCK_NUMBER ${BLOCK_NUMBER}
 
-#COPY --from=builder /usr/src/app/eth-runner /home/node
-#COPY --from=gnobuilder /usr/src/app/gnolang/gno/builder/gnoland /home/node
+COPY --from=builder /usr/src/app/eth-runner /home/node
 
-#RUN npm install -g ganache
+# --------- GNOLAND ------------
+COPY --from=gnobuilder /usr/src/gno/. /usr/src/gno/.
 
-#CMD ["./eth-runner"]
+RUN npm install -g ganache
+
+CMD ["./eth-runner"]
 
