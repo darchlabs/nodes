@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 
 COPY ../../. .
 
-RUN go build -o nodes cmd/ethereum/main.go
+RUN go build -o nodes cmd/nodes/main.go
 
 ## 2nd stage: prepare container to run node
 FROM node

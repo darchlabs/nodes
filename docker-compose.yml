@@ -10,7 +10,7 @@ services:
       - "8545-8595:8545-8595"
       - "6969:6969"
     volumes:
-      - ../data:/home/node/data:rw
+      - ../data:/home/nodes/data:rw
   redis:
     image: redis:latest
     ports:
