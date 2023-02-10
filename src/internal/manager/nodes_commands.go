@@ -11,10 +11,12 @@ type nodeRunner func(*NodeConfig) *command.Command
 var (
 	NetworkEthereum = "ethereum"
 	NetworkPolygon  = "polygon"
+	NetworkGnoland  = "gnoland"
 
 	networkNodesRunners = map[string]nodeRunner{
 		NetworkEthereum: newGanacheCommand,
 		NetworkPolygon:  newGanacheCommand,
+		NetworkGnoland:  newGnolandCommand,
 	}
 )
 
@@ -30,5 +32,14 @@ func newGanacheCommand(config *NodeConfig) *command.Command {
 		"--host", config.Host,
 		"--db", config.BaseChainDataPath,
 		"--fork", bootstrapNodeURL,
+	)
+}
+
+func newGnolandCommand(config *NodeConfig) *command.Command {
+	// omit bootstrap node url
+	return command.New(
+		"cd", "/usr/src/gno", "&&",
+		"/usr/src/gno/build/gnoland",
+		"--genesis-balances-file", "/usr/src/gno/gnoland/genesis/genesis_balances.txt",
 	)
 }

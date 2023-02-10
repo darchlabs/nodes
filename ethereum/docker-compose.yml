@@ -9,6 +9,7 @@ services:
     ports:
       - "8545-8595:8545-8595"
       - "6969:6969"
+      - "26657:26657"
     volumes:
       - ../data:/home/node/data:rw
   redis:
