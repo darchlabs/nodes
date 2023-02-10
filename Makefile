@@ -4,28 +4,28 @@
 #
 
 
-build-node:
+build-nodes:
 	@echo "[building node]"
-	@docker build -t $(CHAIN)-node -f ./$(CHAIN)/docker/Dockerfile --progress tty .
-	@echo "Build $(CHAIN) node docker image done ✔︎"
+	@docker build -t darchlabs-nodes -f ./Dockerfile --progress tty .
+	@echo "Build darchlabs-nodes docker image done ✔︎"
 
-build-node-pristine:
+build-nodes-pristine:
 	@echo "[building node]"
-	@docker build --no-cache -t $(CHAIN)-node -f ./$(CHAIN)/docker/Dockerfile --progress tty .
-	@echo "Build $(CHAIN) node docker image done ✔︎"
+	@docker build --no-cache -t darchlabs-nodes -f ./Dockerfile --progress tty .
+	@echo "Build darchlabs-nodes docker image done ✔︎"
 
-compose-node-up:
+compose-up:
 	@echo "[composing node up]"
-	@docker-compose -f $(CHAIN)/docker-compose.yml up
+	@docker-compose -f docker-compose.yml up
 
-compose-node-down:
+compose-down:
 	@echo "[composing node down]"
-	@docker-compose -f $(CHAIN)/docker-compose.yml down
+	@docker-compose -f docker-compose.yml down
 
-build-node-runner:
-	@echo "[build node runner]"
-	@go build -o bin/$(CHAIN)/runner src/cmd/$(CHAIN)/main.go
-	@echo "Build $(CHAIN) node done ✔︎"
+build-local:
+	@echo "[build darchlabs-nodes local]"
+	@go build -o bin/nodes/nodes cmd/nodes/main.go
+	@echo "Build darchlabs-nodes done ✔︎"
 
 run-node-local:
 	@echo "[run node local]"
