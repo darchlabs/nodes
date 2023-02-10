@@ -140,3 +140,6 @@ tags
 data/
 # bin
 bin/
+
+# env
+.env
