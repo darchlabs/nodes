@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/darchlabs/nodes/src/config"
-	"github.com/darchlabs/nodes/src/internal/api"
-	"github.com/darchlabs/nodes/src/internal/command"
-	"github.com/darchlabs/nodes/src/internal/manager"
-	"github.com/darchlabs/nodes/src/internal/storage"
-	"github.com/darchlabs/nodes/src/pkg/namer"
+	"github.com/darchlabs/nodes/config"
+	"github.com/darchlabs/nodes/internal/api"
+	"github.com/darchlabs/nodes/internal/command"
+	"github.com/darchlabs/nodes/internal/manager"
+	"github.com/darchlabs/nodes/internal/storage"
+	"github.com/darchlabs/nodes/pkg/namer"
 	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
 )

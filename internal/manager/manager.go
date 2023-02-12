@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/darchlabs/nodes/src/internal/command"
+	"github.com/darchlabs/nodes/internal/command"
 )
 
 type IDGenerator func() string

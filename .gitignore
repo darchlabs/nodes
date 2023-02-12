@@ -23,6 +23,8 @@ history
 *.dll
 *.so
 *.dylib
+.env
+node.env
 
 # Test binary, built with `go test -c`
 *.test
@@ -138,3 +140,6 @@ tags
 data/
 # bin
 bin/
+
+# env
+.env

@@ -3,8 +3,8 @@ package api
 import (
 	"fmt"
 
-	"github.com/darchlabs/nodes/src/internal/manager"
-	"github.com/darchlabs/nodes/src/internal/storage"
+	"github.com/darchlabs/nodes/internal/manager"
+	"github.com/darchlabs/nodes/internal/storage"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )

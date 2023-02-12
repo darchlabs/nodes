@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  ethereum-node:
+    image: darchlabs/nodes # using image name tag
+    env_file:
+      - ./node.env
+    restart: on-failure
+    ports:
+      - "8545-8595:8545-8595"
+      - "6969:6969"
+    volumes:
+      - ../data:/home/nodes/data:rw
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - ../data/redis:/data-redis:rw
+
+

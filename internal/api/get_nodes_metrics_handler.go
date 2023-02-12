@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 
-	"github.com/darchlabs/nodes/src/config"
-	"github.com/darchlabs/nodes/src/internal/storage"
+	"github.com/darchlabs/nodes/config"
+	"github.com/darchlabs/nodes/internal/storage"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
 )

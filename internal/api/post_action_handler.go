@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/darchlabs/nodes/src/internal/command"
-	"github.com/darchlabs/nodes/src/internal/manager"
+	"github.com/darchlabs/nodes/internal/command"
+	"github.com/darchlabs/nodes/internal/manager"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
 )
