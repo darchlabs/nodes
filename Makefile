@@ -1,18 +1,18 @@
 # load .env file
-include .env
-export $(shell sed 's/=.*//' .env)
+include node.env
+export $(shell sed 's/=.*//' node.env)
 
 SERVICE_NAME=testing-nodes-docker
 DOCKER_USER=darchlabs
 
-build-nodes:
+build:
 	@echo "[building node]"
-	@docker build -t darchlabs-nodes -f ./Dockerfile --progress tty .
+	@docker build -t darchlabs/nodes -f ./Dockerfile --progress tty .
 	@echo "Build darchlabs-nodes docker image done ✔︎"
 
-build-nodes-pristine:
+build-pristine:
 	@echo "[building node]"
-	@docker build --no-cache -t darchlabs-nodes -f ./Dockerfile --progress tty .
+	@docker build --no-cache -r darchlabs/nodes -f ./Dockerfile --progress tty .
 	@echo "Build darchlabs-nodes docker image done ✔︎"
 
 compose-up:

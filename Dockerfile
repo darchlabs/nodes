@@ -3,7 +3,7 @@ FROM golang as builder
 
 WORKDIR /usr/src/app
 
-COPY ../../. .
+COPY . .
 
 RUN go build -o nodes cmd/nodes/main.go
 
