@@ -1,8 +1,9 @@
-# INTERNAL VARIABLES
-#
-# TARGETS FOR BUILD
-#
+# load .env file
+include .env
+export $(shell sed 's/=.*//' .env)
 
+SERVICE_NAME=testing-nodes-docker
+DOCKER_USER=darchlabs
 
 build-nodes:
 	@echo "[building node]"
@@ -33,8 +34,9 @@ run-node-local:
 
 docker-login:
 	@echo "[docker] Login to docker..."
-	@docker login -u $(DOCKER_USER) --password-sting
+	@docker login -u $(DOCKER_USER) -p $(DOCKER_PASS)
 
 docker: docker-login
 	@echo "[docker] pushing $(REGISTRY_URL)/$(SERVICE_NAME):$(VERSION)"
-	@docker buildx build --platform linux/amd64,linux/arm64 --push -t $(DOCKER_USER)/$(SERVICE_NAME):$(VERSION) .
+	@docker buildx create --use
+	@docker buildx build --platform linux/amd64,linux/arm64  --push -t $(DOCKER_USER)/$(SERVICE_NAME):$(VERSION)	.
