@@ -1,8 +1,8 @@
 # load .env file
 include node.env
-export $(shell sed 's/=.*//' node.env)
+export $(shell sed 's/=.*//'node.env)
 
-SERVICE_NAME=testing-nodes-docker
+SERVICE_NAME=nodes
 DOCKER_USER=darchlabs
 
 build:
@@ -57,3 +57,8 @@ docker: docker-login
 	@echo "[docker] pushing $(REGISTRY_URL)/$(SERVICE_NAME):$(VERSION)"
 	@docker buildx create --use
 	@docker buildx build --platform linux/amd64,linux/arm64  --push -t $(DOCKER_USER)/$(SERVICE_NAME):$(VERSION)	.
+
+docker-node-img: docker-login
+	@echo "[docker] pushing $(REGISTRY_URL)/$(IMG):$(VERSION)"
+	@docker buildx create --use
+	@docker buildx build --platform linux/amd64,linux/arm64  --push -t $(DOCKER_USER)/$(IMG):$(VERSION)	-f ./images/$(IMG)/

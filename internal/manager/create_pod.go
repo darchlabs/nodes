@@ -3,12 +3,13 @@ package manager
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type CreatePodOptions struct {
@@ -17,14 +18,27 @@ type CreatePodOptions struct {
 }
 
 func (m *Manager) CreatePod(opts *CreatePodOptions) error {
-	// Create a new Kubernetes client
-	config, err := rest.InClusterConfig()
+	//clusterServer := os.Getenv("KUBERNETES_CLUSTER_SERVER")
+	//clusterCACert := os.Getenv("KUBERNETES_CLUSTER_CA_CERT")
+	//clusterToken := os.Getenv("KUBERNETES_CLUSTER_TOKEN")
+
+	//// Create a new Kubernetes client
+	//config := &rest.Config{
+	//Host:        clusterServer,
+	//BearerToken: clusterToken,
+	//TLSClientConfig: rest.TLSClientConfig{
+	//CAData: []byte(clusterCACert),
+	//},
+	//}
+	kubeconfig := os.Getenv("KUBECONFIG")
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
-		return errors.Wrap(err, "manager: CreatePod.CreatePod rest.InClusterConfig error")
+		return errors.Wrap(err, "manager: Manager.CreatePod clientcmd.BuildConfigFromFlags error")
 	}
+
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return errors.Wrap(err, "manager: CreatePod.CreatePod kubernetes.NewForConfig error")
+		return errors.Wrap(err, "manager: Manager.CreatePod kubernetes.NewForConfig error")
 	}
 	fmt.Print("------- clientset", clientset.CoreV1())
 	pods, err := clientset.CoreV1().Pods("").List(context.Background(), metav1.ListOptions{})
