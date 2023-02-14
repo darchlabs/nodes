@@ -11,9 +11,26 @@ build:
 	@echo "Build darchlabs-nodes docker image done ✔︎"
 
 build-pristine:
-	@echo "[building node]"
-	@docker build --no-cache -r darchlabs/nodes -f ./Dockerfile --progress tty .
+	@echo "[building image node]"
+	@docker build --no-cache -t darchlabs/nodes -f ./Dockerfile --progress tty .
 	@echo "Build darchlabs-nodes docker image done ✔︎"
+
+build-img:
+	@echo "[building node-$(ntw)]"
+	@echo "docker build --no-cache -t darchlabs/nodes-$(ntw) -f ./images/$(ntw)/Dockerfile --progress tty ."
+	@docker build --no-cache -t darchlabs/node-$(ntw) -f images/$(ntw)/Dockerfile --progress tty .
+	@echo "Build darchlabs/node-$(ntw) docker image done ✔︎"
+
+apply-dev:
+	@echo "[apply node-dev]"
+	@kubectl apply -f infra/dev/deployment.yaml
+	@echo "Applied darchlabs/node-dev ✔︎"
+
+minikube-create:
+	@echo "[creating minikube]"
+	@minikube start --cpus 3 --memory 4096 --disk-size='60000mb' --kubernetes-version v1.22.0
+	@echo "Minikube creating done ✔︎"
+
 
 compose-up:
 	@echo "[composing node up]"
@@ -24,7 +41,7 @@ compose-down:
 	@docker-compose -f docker-compose.yml down
 
 build-local:
-	@echo "[build darchlabs-nodes local]"
+	@echo "[build darchlabs/nodes local]"
 	@go build -o bin/nodes/nodes cmd/nodes/main.go
 	@echo "Build darchlabs-nodes done ✔︎"
 

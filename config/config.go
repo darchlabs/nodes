@@ -6,7 +6,7 @@ type Config struct {
 	// node config
 	BlockNumber      string            `envconfig:"block_number" default:"1"`
 	BasePathDatabase string            `envconfig:"base_path_database" default:"/data"`
-	NetworksURL      map[string]string `envconfig:"networks_url" required:"true"`
+	NetworksURL      map[string]string `envconfig:"networks_url" required:"false"`
 
 	// server config
 	ApiServerHost string `envconfig:"api_server_host" default:"0.0.0.0."`

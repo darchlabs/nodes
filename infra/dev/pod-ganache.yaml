@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ganache-node
+spec:
+  containers:
+  - name: ganache-node
+    image: darchlabs/node-ethereum-dev
+    imagePullPolicy: Never
+    ports:
+    - containerPort: 8545
+    env:
+    - name: ENVIRONMENT
+      value: ${ENVIRONMENT}
+    - name: HOST
+      value: $HOST
+    - name: NETWORK_URL
+      vaue: ${NETWORK_URL}
+    - name: BASE_CHAIN_DATA_PATH
+      value: ${BASE_CHAIN_DATA_PATH}
+    - name: RPC_PORT
+      value: $RPC_PORT
