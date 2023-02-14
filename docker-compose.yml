@@ -1,8 +1,8 @@
-version: '3'
+version: "3"
 
 services:
   ethereum-node:
-    image: darchlabs/nodes # using image name tag
+    image: darchlabs/nodes:1.0.0 # using image name tag
     env_file:
       - ./node.env
     restart: on-failure
@@ -17,5 +17,3 @@ services:
       - 6379:6379
     volumes:
       - ../data/redis:/data-redis:rw
-
-
