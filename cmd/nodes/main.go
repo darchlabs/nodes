@@ -26,16 +26,21 @@ func main() {
 
 	nameGenerator, err := namer.New()
 	check(err)
+	manager, err := manager.New(&manager.Config{
+		IDGenerator:   uuid.NewString,
+		NameGenerator: nameGenerator,
+		// v1 config
+		BootstrapNodesURL: conf.NetworksURL,
+		BasePathDatabase:  conf.BasePathDatabase,
+		// v2 config
+		KubeConfigFilePath: conf.KubeconfigFilePath,
+	})
+	check(err)
 
 	server := api.NewServer(&api.ServerConfig{
 		Port:              conf.ApiServerPort,
 		BootstrapNodesURL: conf.NetworksURL,
-		Manager: manager.New(&manager.Config{
-			IDGenerator:       uuid.NewString,
-			NameGenerator:     nameGenerator,
-			BootstrapNodesURL: conf.NetworksURL,
-			BasePathDatabase:  conf.BasePathDatabase,
-		}),
+		Manager:           manager,
 	})
 
 	log.Printf("Starting [darch node]\n")
