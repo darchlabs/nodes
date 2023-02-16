@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/darchlabs/nodes/internal/manager"
 	"github.com/gofiber/fiber/v2"
@@ -10,12 +11,16 @@ import (
 
 type postNewNodev2HandlerRequest struct {
 	Image   string            `json:"image"`
-	EnvVars map[string]string `json:"env_vars,envVars"`
+	EnvVars map[string]string `json:"envVars"`
 }
 
 type PostNewNodev2HandlerResponse struct {
-	Name     map[string]string `json:"name"`
-	NodeType string            `json:"node_type,nodeType"`
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Chain     string    `json:"chain"`
+	Port      int       `json:"port"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 func postNewNodeV2Handler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
@@ -25,7 +30,7 @@ func postNewNodeV2Handler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) 
 		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: postnewnodev2handler c.BodyParser")
 	}
 
-	err = ctx.server.nodesManager.CreatePod(&manager.CreatePodOptions{
+	nodeInstance, err := ctx.server.nodesManager.CreatePod(&manager.CreatePodOptions{
 		Image:   req.Image,
 		EnvVars: req.EnvVars,
 	})
@@ -34,5 +39,8 @@ func postNewNodeV2Handler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) 
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: postnewnodev2handler ctx.server.nodesManager.CreatePod")
 	}
 
-	return nil, fiber.StatusCreated, nil
+	return PostNewNodev2HandlerResponse{
+		ID:   nodeInstance.ID,
+		Name: nodeInstance.Name,
+	}, fiber.StatusCreated, nil
 }
