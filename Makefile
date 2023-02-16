@@ -61,4 +61,4 @@ docker: docker-login
 docker-node-img: docker-login
 	@echo "[docker] pushing $(REGISTRY_URL)/$(IMG):$(VERSION)"
 	@docker buildx create --use
-	@docker buildx build --platform linux/amd64,linux/arm64  --push -t $(DOCKER_USER)/$(IMG):$(VERSION)	-f ./images/$(IMG)/
+	@docker buildx build --platform linux/amd64,linux/arm64  --push -t $(DOCKER_USER)/node-$(IMG):$(VERSION)	-f ./images/$(IMG)/Dockerfile
