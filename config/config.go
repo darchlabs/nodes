@@ -15,4 +15,6 @@ type Config struct {
 
 	// database config
 	RedisURL string `envconfig:"redis_url" required:"true"`
+	// kubernetes config
+	KubeconfigFilePath string `envconfig:"kubeconfig_file_path" required:"true"`
 }
