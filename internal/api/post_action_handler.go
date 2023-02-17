@@ -21,7 +21,7 @@ var nodeActions = map[string]bool{
 
 type postActionHandlerRequest struct {
 	Action string `json:"action"`
-	NodeID string `json:"node_id"`
+	NodeID string `json:"nodeId"`
 }
 
 type postActionHandlerResponse struct {

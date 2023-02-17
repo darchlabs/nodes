@@ -28,9 +28,9 @@ build-local:
 	@go build -o bin/nodes/nodes cmd/nodes/main.go
 	@echo "Build darchlabs-nodes done ✔︎"
 
-run-node-local:
+dev:
 	@echo "[run node local]"
-	@export $$(cat $(CHAIN)/node.env) && nodemon --exec go run src/cmd/$(CHAIN)/main.go
+	@export $$(cat node.env) && nodemon --exec go run cmd/nodes/main.go
 
 docker-login:
 	@echo "[docker] Login to docker..."
