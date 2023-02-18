@@ -1,8 +1,6 @@
 package api
 
-import (
-	"fmt"
-)
+import "fmt"
 
 func routeNodeEndpoints(prefix string, ctx *Context) {
 	ctx.server.server.Post(fmt.Sprintf("%s", prefix), handleFunc(ctx, postNewNodeHandler))
