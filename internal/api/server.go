@@ -46,6 +46,11 @@ func (s *Server) Start(store storage.DataStore) error {
 			server: s,
 			store:  store,
 		}
+
+		s.server.Get("/api/health", handleFunc(ctx, func(_ *Context, _ *fiber.Ctx) (interface{}, int, error) {
+			return map[string]string{"status": "runnin"}, fiber.StatusOK, nil
+		}))
+
 		// route endpoints
 		routeNodeEndpoints("/api/v1/nodes", ctx)
 
