@@ -2,7 +2,7 @@
 include node.env
 export $(shell sed 's/=.*//' node.env)
 
-SERVICE_NAME=testing-nodes-docker
+SERVICE_NAME=nodes
 DOCKER_USER=darchlabs
 
 build:
