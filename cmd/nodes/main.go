@@ -16,8 +16,8 @@ import (
 
 func main() {
 	fmt.Println("------ Starting node runner")
-	var conf config.Config
-	err := envconfig.Process("", &conf)
+	conf := &config.Config{}
+	err := envconfig.Process("", conf)
 	check(err)
 
 	log.Printf("Database connection [darch node] done\n")
@@ -27,13 +27,15 @@ func main() {
 	nameGenerator, err := namer.New()
 	check(err)
 	manager, err := manager.New(&manager.Config{
+		MainConfig:    conf,
 		IDGenerator:   uuid.NewString,
 		NameGenerator: nameGenerator,
 		// v1 config
 		BootstrapNodesURL: conf.NetworksURL,
 		BasePathDatabase:  conf.BasePathDatabase,
 		// v2 config
-		KubeConfigFilePath: conf.KubeconfigFilePath,
+		KubeConfigFilePath:  conf.KubeconfigFilePath,
+		KubeconfigRemoteURL: conf.KubeconfigRemoteURL,
 	})
 	check(err)
 

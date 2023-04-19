@@ -10,37 +10,44 @@ import (
 )
 
 type postNewNodev2HandlerRequest struct {
-	Image   string            `json:"image"`
+	Network string            `json:"network"`
 	EnvVars map[string]string `json:"envVars"`
 }
 
 type PostNewNodev2HandlerResponse struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Chain     string    `json:"chain"`
-	Port      int       `json:"port"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"createdAt"`
+	ID        string      `json:"id"`
+	Name      string      `json:"name"`
+	Network   string      `json:"network"`
+	Port      int         `json:"port"`
+	Status    string      `json:"status"`
+	Artifacts interface{} `json:"artifacts"`
+	CreatedAt time.Time   `json:"createdAt"`
 }
 
 func postNewNodeV2Handler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 	var req postNewNodev2HandlerRequest
 	err := c.BodyParser(&req)
 	if err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: postnewnodev2handler c.BodyParser")
+		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: postNewNodeV2Handler c.BodyParser")
 	}
 
-	nodeInstance, err := ctx.server.nodesManager.CreatePod(&manager.CreatePodOptions{
-		Image:   req.Image,
+	nodeInstance, err := ctx.server.nodesManager.DeployNewNode(&manager.CreatePodOptions{
+		Network: req.Network,
 		EnvVars: req.EnvVars,
 	})
-
+	if errors.Is(err, manager.ErrNodeNotFound) {
+		return nil, http.StatusNotFound, nil
+	}
 	if err != nil {
-		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: postnewnodev2handler ctx.server.nodesManager.CreatePod")
+		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: postNewNodeV2Handler ctx.server.nodesManager.DeployNewNode")
 	}
 
 	return PostNewNodev2HandlerResponse{
-		ID:   nodeInstance.ID,
-		Name: nodeInstance.Name,
+		ID:        nodeInstance.ID,
+		Name:      nodeInstance.Name,
+		Network:   nodeInstance.Config.Network,
+		Artifacts: nodeInstance.Artifacts,
+		Port:      nodeInstance.Config.Port,
+		CreatedAt: nodeInstance.Config.CreatedAt,
 	}, fiber.StatusCreated, nil
 }

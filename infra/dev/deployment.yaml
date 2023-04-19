@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: nodes
-        image: darchlabs/nodes
-        imagePullPolicy: Never
+        image: darchlabs/nodes:dev
+        imagePullPolicy: Always
         ports:
         - containerPort: 6969
         readinessProbe:
@@ -37,10 +37,15 @@ spec:
           - name: BASE_PATH_DATABASE
             value: "data"
           - name: NETWORKS_URL
-            value: "ethereum:capable-quick-vineyard.discover.quiknode.pro/3f240555880826d7153fe818e34bf1aef2b75e50,polygon:skilled-misty-morning.matic.discover.quiknode.pro/9c6b0efce65cc906fec0275ac85da2385a8d8359"
+            value: "ethereum:patient-delicate-pine.quiknode.pro/4200300eae9e45c661df02030bac8bc34f8b618e/,polygon:skilled-misty-morning.matic.quiknode.pro/9c6b0efce65cc906fec0275ac85da2385a8d8359/"
           - name: REDIS_URL
             value: "redis:6397"
-
+          - name: KUBECONFIG_FILE_PATH
+            value: "kubeconf.yml"
+          - name: KUBECONFIG_REMOTE_URL
+            value: "https://gist.githubusercontent.com/mtavano/d8e5f3d98019f8a1415748bd8326fba6/raw/4f2e508f6943b5186752fc96b13fae6b53419df6/kubeconf.mnode2.yml"
+          - name: IMAGES
+            value: "evm$darchlabs/node-ethereum-dev:0.0.2"
 ---
 apiVersion: v1
 kind: Service
@@ -54,35 +59,3 @@ spec:
     role: nodes
 
 #---
-#apiVersion: v1
-#kind: ServiceAccount
-#metadata:
-  #name: deployment-manager-user
-  #namespace: default
-
-#---
-#apiVersion: rbac.authorization.k8s.io/v1
-#kind: Role
-#metadata:
-  #namespace: default
-  #name: deployment-manager
-#rules:
-#- apiGroups: ["*"] 
-  #resources: ["pods"]
-  #verbs: ["get", "watch", "list", "create", "delete", "update", "patch"]
-
-#---
-#apiVersion: rbac.authorization.k8s.io/v1
-#kind: RoleBinding
-#metadata:
-  #name: deployment-manager-binding
-  #namespace: default
-#subjects:
-#- kind: ServiceAccount
-  #name: deployment-manager-user
-  #namespace: default
-#roleRef:
-  #kind: Role
-  #name: deployment-manager
-  #apiGroup: "rbac.authorization.k8s.io"
-

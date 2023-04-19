@@ -6,7 +6,6 @@ import (
 	"github.com/darchlabs/nodes/internal/manager"
 	"github.com/darchlabs/nodes/internal/storage"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
@@ -32,8 +31,10 @@ type Context struct {
 func NewServer(config *ServerConfig) *Server {
 
 	server := fiber.New()
-	server.Use(cors.New())
 	server.Use(logger.New())
+	server.Use(logger.New(logger.Config{
+		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
+	}))
 
 	return &Server{
 		server:       fiber.New(),

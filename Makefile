@@ -1,6 +1,6 @@
 # load .env file
 include node.env
-export $(shell sed 's/=.*//'node.env)
+export $(shell sed 's/=.*//' node.env)
 
 SERVICE_NAME=nodes
 DOCKER_USER=darchlabs
@@ -8,7 +8,7 @@ DOCKER_USER=darchlabs
 build:
 	@echo "[building node]"
 	@docker build -t darchlabs/nodes -f ./Dockerfile --progress tty .
-	@echo "Build darchlabs-nodes docker image done ✔︎"
+	@echo "Build darchlabs/nodes docker image done ✔︎"
 
 build-pristine:
 	@echo "[building image node]"
@@ -23,7 +23,7 @@ build-img:
 
 apply-dev:
 	@echo "[apply node-dev]"
-	@kubectl apply -f infra/dev/deployment.yaml
+	@kubectl apply -f infra/dev/$(art).yaml
 	@echo "Applied darchlabs/node-dev ✔︎"
 
 minikube-create:
@@ -56,7 +56,7 @@ docker-login:
 docker: docker-login
 	@echo "[docker] pushing $(REGISTRY_URL)/$(SERVICE_NAME):$(VERSION)"
 	@docker buildx create --use
-	@docker buildx build --platform linux/amd64,linux/arm64  --push -t $(DOCKER_USER)/$(SERVICE_NAME):$(VERSION)	.
+	@docker buildx build --platform linux/amd64,linux/arm64  --push -t $(DOCKER_USER)/$(SERVICE_NAME):$(VERSION) .
 
 docker-node-img: docker-login
 	@echo "[docker] pushing $(REGISTRY_URL)/$(IMG):$(VERSION)"

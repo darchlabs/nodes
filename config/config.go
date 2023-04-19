@@ -1,5 +1,11 @@
 package config
 
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
 type Config struct {
 	Environment string `envconfig:"environment" required:"true"`
 
@@ -15,6 +21,26 @@ type Config struct {
 
 	// database config
 	RedisURL string `envconfig:"redis_url" required:"true"`
+
 	// kubernetes config
-	KubeconfigFilePath string `envconfig:"kubeconfig_file_path" required:"true"`
+	KubeconfigFilePath  string `envconfig:"kubeconfig_file_path" required:"true"`
+	KubeconfigRemoteURL string `envconfig:"kubeconfig_remote_url" required:"true"`
+
+	// images supported
+	Images map[string]string
+}
+
+func (c *Config) ParseImages() map[string]string {
+	imgs := os.Getenv("IMAGES_SUPPORTED")
+
+	images := make(map[string]string)
+
+	for _, pair := range strings.Split(imgs, ",") {
+		// network $ image:version
+		values := strings.Split(pair, "$")
+		fmt.Println(values[0], "---", values[1])
+
+		images[values[0]] = values[1]
+	}
+	return images
 }

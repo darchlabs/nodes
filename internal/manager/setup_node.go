@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -10,24 +11,38 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-type CreatePodOptions struct {
-	Image   string
-	EnvVars map[string]string
+func setupFuncByNetwork(m *Manager) map[string]nodeSetup {
+	return map[string]nodeSetup{
+		"ethereum": m.EvmNode,
+		"polygon":  m.EvmNode,
+	}
 }
 
-func (m *Manager) CreatePod(opts *CreatePodOptions) (*NodeInstance, error) {
+func (m *Manager) EvmNode(network string, env map[string]string) (*NodeInstance, error) {
 	envVars := make([]corev1.EnvVar, 0)
 
-	for k, v := range opts.EnvVars {
+	if _, ok := env["FROM_BLOCK_NUMBER"]; ok {
+		env["NETWORK_URL"] = fmt.Sprintf("%s@%s", env["NETWORK_URL"], env["FROM_BLOCK_NUMBER"])
+		delete(env, "FROM_BLOCK_NUMBER")
+	}
+
+	for k, v := range env {
 		envVars = append(envVars, corev1.EnvVar{
 			Name:  k,
 			Value: v,
 		})
 	}
 
-	containerName := fmt.Sprintf("ethereum-%s", m.nameGenerator.Generate())
+	// main receipe
+	containerName := fmt.Sprintf("%s-%s", network, m.nameGenerator.Generate())
+	arts := &Artifacts{
+		Pods:     []string{containerName},
+		Services: []string{containerName},
+	}
 
 	// Define the new pod
+	fmt.Println("---------- image deployed on pod ", m.MainConfig.Images)
+
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: containerName,
@@ -41,12 +56,12 @@ func (m *Manager) CreatePod(opts *CreatePodOptions) (*NodeInstance, error) {
 				{
 					Name: containerName,
 					//Image:           opts.Image,
-					Image:           "darchlabs/node-ethereum-dev:0.0.2",
+					Image:           m.MainConfig.Images["evm"],
 					ImagePullPolicy: corev1.PullIfNotPresent,
 					Ports: []corev1.ContainerPort{
 						{
-							ContainerPort: 8545,
-							HostPort:      8545,
+							ContainerPort: 8544, // TODO: make it dynamic
+							HostPort:      8545, // TODO: make it dynamic
 							Name:          "http",
 							Protocol:      corev1.ProtocolTCP,
 						},
@@ -64,7 +79,7 @@ func (m *Manager) CreatePod(opts *CreatePodOptions) (*NodeInstance, error) {
 	)
 	if err != nil {
 		fmt.Println("--ERROR-- ", err.Error())
-		return nil, errors.Wrap(err, "manager: Manager.CreatePod m.clusterClient.CoreV1().Pods().Create")
+		return nil, errors.Wrap(err, "manager: evmNode m.clusterClient.CoreV1().Pods().Create")
 	}
 
 	service := &corev1.Service{
@@ -78,8 +93,8 @@ func (m *Manager) CreatePod(opts *CreatePodOptions) (*NodeInstance, error) {
 			},
 			Ports: []corev1.ServicePort{
 				{
-					Port:       8545,
-					TargetPort: intstr.FromInt(8545),
+					Port:       8545,                 // TODO: make it dynamic
+					TargetPort: intstr.FromInt(8545), // TODO: make it dynamic
 					Name:       "http",
 					Protocol:   corev1.ProtocolTCP,
 				},
@@ -95,17 +110,18 @@ func (m *Manager) CreatePod(opts *CreatePodOptions) (*NodeInstance, error) {
 		metav1.CreateOptions{},
 	)
 	if err != nil {
-		fmt.Println("--ERROR-- ", err.Error())
-		return nil, errors.Wrap(err, "manager: Manager.CreatePod m.clusterClient.CoreV1().Services().Create")
+		return nil, errors.Wrap(err, "manager: evmNode m.clusterClient.CoreV1().Services().Create")
 	}
 
 	return &NodeInstance{
-		ID:     m.idGenerator(),
-		Name:   containerName,
-		Config: &NodeConfig{},
+		ID:        m.idGenerator(),
+		Name:      containerName,
+		Artifacts: arts,
+		Config: &NodeConfig{
+			Host:      containerName,
+			Network:   network,
+			Port:      8545, // TODO: make it dynamic
+			CreatedAt: time.Now(),
+		},
 	}, nil
-}
-
-func intPtr32(i int32) *int32 {
-	return &i
 }
