@@ -13,12 +13,12 @@ import (
 
 func setupFuncByNetwork(m *Manager) map[string]nodeSetup {
 	return map[string]nodeSetup{
-		"ethereum": m.EvmNode,
-		"polygon":  m.EvmNode,
+		"ethereum": m.EvmDevNode,
+		"polygon":  m.EvmDevNode,
 	}
 }
 
-func (m *Manager) EvmNode(network string, env map[string]string) (*NodeInstance, error) {
+func (m *Manager) EvmDevNode(network string, env map[string]string) (*NodeInstance, error) {
 	envVars := make([]corev1.EnvVar, 0)
 
 	if _, ok := env["FROM_BLOCK_NUMBER"]; ok {
