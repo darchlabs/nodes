@@ -1,0 +1,119 @@
+# Config map
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  POSTGRES_DB: chainlink-db
+  POSTGRES_USER: chainlink
+  POSTGRES_PASSWORD: password123
+
+---
+
+# Service to reach postgres db
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  clusterIP: None
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:13
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          ports:
+            - containerPort: 5432
+              name: postgres
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chainlink-node
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chainlink-node
+  template:
+    metadata:
+      labels:
+        app: chainlink-node
+    spec:
+      containers:
+        - name: chainlink-node
+          image: smartcontract/chainlink:latest
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://chainlink:password123@postgres:5432/chainlink-db?sslmode=disable"
+            - name: LINK_NODE_API_SERVER_PORT
+              value: "6688"
+            - name: ROOT
+              value: "/chainlink"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: ETH_URL
+              value: "https://your-ethereum-node-url"
+            - name: CHAINLINK_TLS_PORT
+              value: "0"
+            - name: SECURE_COOKIES
+              value: "false"
+            - name: ALLOW_ORIGINS
+              value: "*"
+            - name: EMAIL_SERVER
+              value: "your-smtp-server.com"
+            - name: EMAIL_USER
+              value: "your-email-user"
+            - name: EMAIL_PASSWORD
+              value: "your-email-password"
+            - name: EMAIL_PORT
+              value: "587"
+            - name: EMAIL_FROM
+              value: "no-reply@example.com"
+            - name: EMAIL_TLS_SKIP_VERIFY
+              value: "true"
+          ports:
+            - containerPort: 6688
+              name: chainlink-node
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: chainlink-node
+spec:
+  selector:
+    app: chainlink-node
+  ports:
+    - protocol: TCP
+      port: 6688
+      targetPort: 6688
+  type: LoadBalancer
+
