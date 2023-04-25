@@ -4,9 +4,9 @@ kind: ConfigMap
 metadata:
   name: postgres-config
 data:
-  POSTGRES_DB: chainlink-db
-  POSTGRES_USER: chainlink
-  POSTGRES_PASSWORD: password123
+  POSTGRES_DB: postgres
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: ThisPasswordIsSecure
 
 ---
 
@@ -50,6 +50,14 @@ spec:
             - containerPort: 5432
               name: postgres
 
+          volumeMounts:
+            - name: postgres-db
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-db
+          hostPath:
+            path: /mnt/data/postgres-db
+
 ---
 
 apiVersion: apps/v1
@@ -66,41 +74,65 @@ spec:
       labels:
         app: chainlink-node
     spec:
+      initContainers:
+          - name: chainlink-creds-creator
+            image: busybox:latest
+            command: ["/bin/sh", "-c"]
+            args:
+              - echo "ThisPasswordIsSecure" >> /password.txt
+            volumeMounts:
+              - name: shared-data
+                mountPath: /
+
       containers:
         - name: chainlink-node
-          image: smartcontract/chainlink:latest
+          image: smartcontract/chainlink:1.13.1-root
+          #command:
+            #- /bin/sh
+            #- -c
+            #- |
+              #echo "creating password file" &&
+              #echo "ThisPasswordIsSecure" >> /password.txt && echo "password file created"
           env:
-            - name: DATABASE_URL
-              value: "postgresql://chainlink:password123@postgres:5432/chainlink-db?sslmode=disable"
-            - name: LINK_NODE_API_SERVER_PORT
-              value: "6688"
             - name: ROOT
-              value: "/chainlink"
+              value: "/"
             - name: LOG_LEVEL
-              value: "info"
+              value: "debug"
+            - name: MIN_OUTGOING_CONFIRMATIONS
+              value: "2"
+            - name: ETH_CHAIN_ID
+              value: "11155111"
             - name: ETH_URL
-              value: "https://your-ethereum-node-url"
+              value: "wss://ancient-smart-shadow.ethereum-sepolia.quiknode.pro/481affad55cac7efcbcc1182e4e435107aee7fae/"
+            - name: DATABASE_URL
+              value: "postgres://postgres:ThisPasswordIsSecure@postgres:5432/postgres?sslmode=disable"
+            - name: LINK_CONTRACT_ADDRESS
+              value: "0x779877A7B0D9E8603169DdbD7836e478b4624789"
             - name: CHAINLINK_TLS_PORT
               value: "0"
             - name: SECURE_COOKIES
               value: "false"
+            - name: GAS_UPDATER_ENABLED
+              value: "true"
+            - name: FEATURE_FLUX_MONITOR
+              value: "true"
             - name: ALLOW_ORIGINS
               value: "*"
-            - name: EMAIL_SERVER
-              value: "your-smtp-server.com"
-            - name: EMAIL_USER
-              value: "your-email-user"
-            - name: EMAIL_PASSWORD
-              value: "your-email-password"
-            - name: EMAIL_PORT
-              value: "587"
-            - name: EMAIL_FROM
-              value: "no-reply@example.com"
-            - name: EMAIL_TLS_SKIP_VERIFY
-              value: "true"
+            - name: DATABASE_TIMEOUT
+              value: "0"
+            - name: CHAINLINK_EMAIL
+              value: "weare@darchlabs.com"
           ports:
             - containerPort: 6688
               name: chainlink-node
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared-data
+
+      volumes:
+        - name: shared-data
+          hostPath:
+            path: /mnt/data/shared-data
 
 ---
 
