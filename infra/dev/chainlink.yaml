@@ -74,28 +74,25 @@ spec:
       labels:
         app: chainlink-node
     spec:
-      initContainers:
-          - name: chainlink-creds-creator
-            image: busybox:latest
-            command: ["/bin/sh", "-c"]
-            args:
-              - echo "ThisPasswordIsSecure" >> /password.txt
-            volumeMounts:
-              - name: shared-data
-                mountPath: /
+      #initContainers:
+          #- name: chainlink-creds-creator
+            #image: busybox:latest
+            #command: ["/bin/sh", "-c"]
+            #args:
+              #- mkdir /usr/src/shared-data && echo "ThisPasswordIsSecure" >> /password.txt
+            #volumeMounts:
+              #- name: shared-data
+                #mountPath: /
 
       containers:
         - name: chainlink-node
           image: smartcontract/chainlink:1.13.1-root
-          #command:
-            #- /bin/sh
-            #- -c
-            #- |
-              #echo "creating password file" &&
-              #echo "ThisPasswordIsSecure" >> /password.txt && echo "password file created"
+          #command: ["/bin/sh", "-c"]
+          #args: ["sleep 999999"]
+          args: ["node", "start", "--password",  "/chainlink/password.txt"]
           env:
             - name: ROOT
-              value: "/"
+              value: "/chainlink"
             - name: LOG_LEVEL
               value: "debug"
             - name: MIN_OUTGOING_CONFIRMATIONS
@@ -127,7 +124,7 @@ spec:
               name: chainlink-node
           volumeMounts:
             - name: shared-data
-              mountPath: /shared-data
+              mountPath: /chainlink
 
       volumes:
         - name: shared-data
