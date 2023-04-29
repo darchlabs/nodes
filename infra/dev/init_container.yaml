@@ -31,7 +31,7 @@ spec:
                 sleep 10
             volumeMounts:
               - name: shared-data
-                mountPath: $HOME/
+                mountPath: /usr/src/shared
 
       containers:
         - name: ubuntu

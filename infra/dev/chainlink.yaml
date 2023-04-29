@@ -74,22 +74,23 @@ spec:
       labels:
         app: chainlink-node
     spec:
-      #initContainers:
-          #- name: chainlink-creds-creator
-            #image: busybox:latest
+      initContainers:
+          - name: chainlink-creds-creator
+            image: busybox:latest
+            command: ["/bin/sh", "-c", "echo 'ThisPasswordIsSecure' > /chainlink/password.txt && echo 'weare@darchlabs.com\nThisPasswordIsSecure' > /chainlink/creds.txt"]
             #command: ["/bin/sh", "-c"]
             #args:
-              #- mkdir /usr/src/shared-data && echo "ThisPasswordIsSecure" >> /password.txt
-            #volumeMounts:
-              #- name: shared-data
-                #mountPath: /
+              #- echo "ThisPasswordIsSecure" >> /chainlik/password.txt && echo "weare@darchlabs.com" >> /chainlink/creds.txt && echo "ThisIsSecurePassword" >> /chainlink/creds.txt
+            volumeMounts:
+              - name: shared-data
+                mountPath: /
 
       containers:
         - name: chainlink-node
           image: smartcontract/chainlink:1.13.1-root
           #command: ["/bin/sh", "-c"]
           #args: ["sleep 999999"]
-          args: ["node", "start", "--password",  "/chainlink/password.txt"]
+          args: ["node", "start", "--password",  "/chainlink/password.txt", "--api", "/chainlink/creds.txt"]
           env:
             - name: ROOT
               value: "/chainlink"
