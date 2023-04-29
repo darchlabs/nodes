@@ -115,6 +115,7 @@ type NodeInstance struct {
 type NodeConfig struct {
 	Host              string
 	Network           string
+	Environment       string
 	Port              int
 	BaseChainDataPath string
 	BootsrapNodeURL   string
@@ -124,8 +125,9 @@ type NodeConfig struct {
 }
 
 type Artifacts struct {
-	Pods     []string
-	Services []string
+	Deployments []string
+	Pods        []string
+	Services    []string
 }
 
 type nodeSetup func(network string, env map[string]string) (*NodeInstance, error)

@@ -15,13 +15,14 @@ type postNewNodev2HandlerRequest struct {
 }
 
 type PostNewNodev2HandlerResponse struct {
-	ID        string      `json:"id"`
-	Name      string      `json:"name"`
-	Network   string      `json:"network"`
-	Port      int         `json:"port"`
-	Status    string      `json:"status"`
-	Artifacts interface{} `json:"artifacts"`
-	CreatedAt time.Time   `json:"createdAt"`
+	ID          string      `json:"id"`
+	Name        string      `json:"name"`
+	Network     string      `json:"network"`
+	Environment string      `json:"environment,omitempty"`
+	Port        int         `json:"port"`
+	Status      string      `json:"status"`
+	Artifacts   interface{} `json:"artifacts"`
+	CreatedAt   time.Time   `json:"createdAt"`
 }
 
 func postNewNodeV2Handler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
@@ -43,11 +44,12 @@ func postNewNodeV2Handler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) 
 	}
 
 	return PostNewNodev2HandlerResponse{
-		ID:        nodeInstance.ID,
-		Name:      nodeInstance.Name,
-		Network:   nodeInstance.Config.Network,
-		Artifacts: nodeInstance.Artifacts,
-		Port:      nodeInstance.Config.Port,
-		CreatedAt: nodeInstance.Config.CreatedAt,
+		ID:          nodeInstance.ID,
+		Name:        nodeInstance.Name,
+		Network:     nodeInstance.Config.Network,
+		Environment: nodeInstance.Config.Environment,
+		Artifacts:   nodeInstance.Artifacts,
+		Port:        nodeInstance.Config.Port,
+		CreatedAt:   nodeInstance.Config.CreatedAt,
 	}, fiber.StatusCreated, nil
 }
