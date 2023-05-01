@@ -14,6 +14,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+var ErrKeyNotFound = errors.New("environment key not found")
+
 type IDGenerator func() string
 
 type NameGenerator interface {
@@ -52,28 +54,29 @@ func New(config *Config) (*Manager, error) {
 	}
 
 	// v2 kubernetes setup
-	//get remote file
-	fmt.Println("--------- url file ", config.KubeconfigRemoteURL)
-	res, err := http.Get(config.KubeconfigRemoteURL)
-	if err != nil {
-		return nil, errors.Wrap(err, "manager: New http.Get error")
-	}
+	//get remote file if exist. Otherwise path only will be used
+	if config.KubeconfigRemoteURL != "" {
+		fmt.Println("--------- url file ", config.KubeconfigRemoteURL)
+		res, err := http.Get(config.KubeconfigRemoteURL)
+		if err != nil {
+			return nil, errors.Wrap(err, "manager: New http.Get error")
+		}
 
-	out, err := os.Create(config.KubeConfigFilePath)
-	if err != nil {
-		return nil, errors.Wrap(err, "manager: New http.Get ")
-	}
+		out, err := os.Create(config.KubeConfigFilePath)
+		if err != nil {
+			return nil, errors.Wrap(err, "manager: New http.Get ")
+		}
 
-	// Copy the contents of the response body to the output file
-	_, err = io.Copy(out, res.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "manager: New io.Copy error")
-	}
+		// Copy the contents of the response body to the output file
+		_, err = io.Copy(out, res.Body)
+		if err != nil {
+			return nil, errors.Wrap(err, "manager: New io.Copy error")
+		}
 
-	if err = out.Close(); err != nil {
-		return nil, errors.Wrap(err, "manager: New body.Close error")
+		if err = out.Close(); err != nil {
+			return nil, errors.Wrap(err, "manager: New body.Close error")
+		}
 	}
-
 	// using the file created
 	k8sClusterConfig, err := clientcmd.BuildConfigFromFlags("", config.KubeConfigFilePath)
 	if err != nil {
