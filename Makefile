@@ -22,7 +22,7 @@ build-img:
 	@echo "Build darchlabs/node-$(ntw) docker image done ✔︎"
 
 apply-dev:
-	@echo "[apply node-dev]"
+	@echo "[applying infra/dev/$(art).yaml]"
 	@kubectl apply -f infra/dev/$(art).yaml
 	@echo "Applied darchlabs/node-dev ✔︎"
 
