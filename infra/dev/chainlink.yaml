@@ -1,3 +1,15 @@
+# Config map
+#apiVersion: v1
+#kind: ConfigMap
+#metadata:
+  #name: postgres-config
+#data:
+  #POSTGRES_DB: postgres
+  #POSTGRES_USER: postgres
+  #POSTGRES_PASSWORD: ThisPasswordIsSecure
+
+---
+
 # Service to reach postgres db
 apiVersion: v1
 kind: Service
