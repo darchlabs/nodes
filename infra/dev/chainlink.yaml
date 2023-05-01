@@ -1,15 +1,3 @@
-# Config map
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgres-config
-data:
-  POSTGRES_DB: postgres
-  POSTGRES_USER: postgres
-  POSTGRES_PASSWORD: ThisPasswordIsSecure
-
----
-
 # Service to reach postgres db
 apiVersion: v1
 kind: Service
@@ -43,9 +31,13 @@ spec:
       containers:
         - name: postgres
           image: postgres:13
-          envFrom:
-            - configMapRef:
-                name: postgres-config
+          env:
+            - name: POSTGRES_DB
+              value: "postgres"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: ThisPasswordIsSecure
           ports:
             - containerPort: 5432
               name: postgres
@@ -74,22 +66,9 @@ spec:
       labels:
         app: chainlink-node
     spec:
-      initContainers:
-          - name: chainlink-creds-creator
-            image: busybox:latest
-            command: ["/bin/sh", "-c", "echo 'ThisPasswordIsSecure' > /chainlink/password.txt && echo 'weare@darchlabs.com\nThisPasswordIsSecure' > /chainlink/creds.txt"]
-            #command: ["/bin/sh", "-c"]
-            #args:
-              #- echo "ThisPasswordIsSecure" >> /chainlik/password.txt && echo "weare@darchlabs.com" >> /chainlink/creds.txt && echo "ThisIsSecurePassword" >> /chainlink/creds.txt
-            volumeMounts:
-              - name: shared-data
-                mountPath: /
-
       containers:
         - name: chainlink-node
           image: smartcontract/chainlink:1.13.1-root
-          #command: ["/bin/sh", "-c"]
-          #args: ["sleep 999999"]
           args: ["node", "start", "--password",  "/chainlink/password.txt", "--api", "/chainlink/creds.txt"]
           env:
             - name: ROOT
