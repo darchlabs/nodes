@@ -24,7 +24,7 @@ type Config struct {
 
 	// kubernetes config
 	KubeconfigFilePath  string `envconfig:"kubeconfig_file_path" required:"true"`
-	KubeconfigRemoteURL string `envconfig:"kubeconfig_remote_url" required:"true"`
+	KubeconfigRemoteURL string `envconfig:"kubeconfig_remote_url" required:"false"`
 
 	// images supported
 	Images map[string]string
