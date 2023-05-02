@@ -54,7 +54,6 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 	if !ok {
 		return nil, ErrKeyNotFound
 	}
-	managerName := fmt.Sprintf("%s-%s-%s", network, networkEnv, nodeName)
 
 	// ## Check chainlink basics. Create folders and files
 	networkDir := fmt.Sprintf("%s%s/%s/%s", m.basePathDB, network, networkEnv, nodeName)
@@ -77,10 +76,22 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 	}
 	envVars, _ = getEnvVars(defaultEnvKeys, chainlinkDefaultEnvVars, envVars)
 
+	// network related env vars
+	networkEnvKeys := make([]string, 0, len(chainlinkNetworkEnvVars[networkEnv]))
+	for k := range chainlinkDefaultEnvVars {
+		networkEnvKeys = append(defaultEnvKeys, k)
+	}
+	envVars, _ = getEnvVars(networkEnvKeys, chainlinkNetworkEnvVars[networkEnv], envVars)
+
+	for _, v := range envVars {
+		log.Printf("ENV VAR - %+v\n", v)
+	}
+
 	// ## Handle env vars
 	// TODO: use dynamic password
 	dbPass := "ThisPasswordIsSecure"
-	dbURL := fmt.Sprintf("postgres://postgres:%s@postgres:5432/%s?sslmode=disable", dbPass, nodeName)
+	psqlNameRef := fmt.Sprintf("postgres-%s", nodeName)
+	dbURL := fmt.Sprintf("postgres://postgres:%s@%s:5432/postgres?sslmode=disable", dbPass, psqlNameRef)
 	envVars = append(envVars, []corev1.EnvVar{
 		{
 			Name:  "DATABASE_URL",
@@ -102,9 +113,10 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 	ctx := context.Background()
 
 	// ### POSTGRES RELATED
-	psqlNameRef := fmt.Sprintf("postgres-%s", managerName)
 
 	// 1. Create Chainlink-postgres-db service
+	log.Printf("[MANAGER] start Chainlink-postgres service <%s> creation", psqlNameRef)
+
 	arts.Services = append(arts.Services, psqlNameRef)
 	psqlSvc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -117,13 +129,13 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 			},
 			Ports: []corev1.ServicePort{
 				{
-					Name:       psqlNameRef,
+					Name:       "http",
 					Protocol:   corev1.ProtocolTCP,
 					Port:       5432,
 					TargetPort: intstr.FromInt(5432),
 				},
 			},
-			ClusterIP: "None",
+			Type: corev1.ServiceTypeClusterIP,
 		},
 	}
 	_, err = m.clusterClient.CoreV1().Services("default").Create(ctx, psqlSvc, metav1.CreateOptions{})
@@ -131,9 +143,10 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 		return nil, errors.Wrap(err, "manager: Manager.ChainlinkNode m.clusterClient.CoreV1().Service.Create psql error")
 	}
 
-	log.Printf("[MANAGER] Chainlink-postgres service <%s> created succesfully", psqlNameRef)
+	log.Printf("[MANAGER] Chainlink-postgres service <%s> created [DONE ✔︎]", psqlNameRef)
 
 	// 2. Create Chainlink-postgres-db deployment
+	log.Printf("[MANAGER] start Chainlink-postgres deployment <%s> creation", psqlNameRef)
 	dbReplicas := int32(1)
 	postgresDeploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -143,13 +156,15 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 			Replicas: &dbReplicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": psqlNameRef,
+					"app":  psqlNameRef,
+					"role": psqlNameRef,
 				},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": psqlNameRef,
+						"app":  psqlNameRef,
+						"role": psqlNameRef,
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -159,8 +174,12 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 							Image: "postgres:13",
 							Env: []corev1.EnvVar{
 								{
+									Name:  "PGSSLMODE",
+									Value: "disable",
+								},
+								{
 									Name:  "POSTGRES_DB",
-									Value: managerName,
+									Value: "postgres",
 								},
 								{
 									Name:  "POSTGRES_USER",
@@ -173,13 +192,13 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 							},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          "postgres",
+									Name:          "http",
 									ContainerPort: 5432,
 								},
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      "postgres-db",
+									Name:      "nodes-pvc",
 									MountPath: "/var/lib/postgresql/data",
 								},
 							},
@@ -187,7 +206,7 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: psqlNameRef,
+							Name: "nodes-pvc",
 							VolumeSource: corev1.VolumeSource{
 								HostPath: &corev1.HostPathVolumeSource{
 									Path: fmt.Sprintf("/mnt/data/nodes-volume/databases/%s", nodeName),
@@ -206,13 +225,14 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 		metav1.CreateOptions{},
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "manager: Manager.ChainlinkNode m.clusterClient.AppsV1.Deployment.Create psql-deployment error")
+		return nil, errors.Wrap(err, "manager: Manager.ChainlinkNode m.clusterClient.AppsV1().Deployment.Create psql-deployment error")
 	}
 
-	log.Printf("[MANAGER] Chainlink-postgres deployment <%s> created succesfully", psqlNameRef)
+	log.Printf("[MANAGER] Chainlink-postgres deployment <%s> created [DONE ✔︎]", psqlNameRef)
 
 	// ### CHAINLINK RELATED
-	chainlinkNameRef := fmt.Sprintf("chainlink-%s", managerName)
+	chainlinkNameRef := fmt.Sprintf("chainlink-%s", nodeName)
+	log.Printf("[MANAGER] start Chainlink-node service <%s> creation", chainlinkNameRef)
 
 	// 3. Create chainlink-node-svc
 	arts.Services = append(arts.Services, chainlinkNameRef)
@@ -222,15 +242,14 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app":  chainlinkNameRef,
-				"role": chainlinkNameRef,
+				"app": chainlinkNameRef,
 			},
 			Ports: []corev1.ServicePort{
 				{
-					Name:       psqlNameRef,
+					Name:       chainlinkNameRef,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       5432,
-					TargetPort: intstr.FromInt(5432),
+					Port:       6688,
+					TargetPort: intstr.FromInt(6688),
 				},
 			},
 			Type: corev1.ServiceTypeClusterIP,
@@ -239,15 +258,17 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 
 	_, err = m.clusterClient.CoreV1().Services("default").Create(ctx, chainlinkSvc, metav1.CreateOptions{})
 	if err != nil {
-		return nil, errors.Wrap(err, "manager: Manager.ChainlinkNode m.clusterClient.CoreV1().Service.Create psql error")
+		return nil, errors.Wrap(err, "manager: Manager.ChainlinkNode m.clusterClient.CoreV1().Service.Create service error")
 	}
 
-	log.Printf("[MANAGER] Chainlink-postgres node service <%s> created succesfully", chainlinkNameRef)
+	log.Printf("[MANAGER] Chainlink-node service <%s> created [DONE ✔︎]", chainlinkNameRef)
 
 	// 4. Create Chainlink-node-deployment
+	log.Printf("[MANAGER] start Chainlink-node deployment <%s> creation", chainlinkNameRef)
+
 	chainlinkDeploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: psqlNameRef,
+			Name: chainlinkNameRef,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &dbReplicas,
@@ -267,11 +288,20 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 						{
 							Name:  chainlinkNameRef,
 							Image: "smartcontract/chainlink:1.13.1-root",
-							Env:   envVars,
+							//Command: []string{"/bin/sh", "-c"},
+							Args: []string{
+								"node",
+								"start",
+								"--password",
+								fmt.Sprintf("/%s/password.txt", nodeName),
+								"--api",
+								fmt.Sprintf("/%s/creds.txt", nodeName),
+							},
+							Env: envVars,
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          "postgres",
-									ContainerPort: 5432,
+									Name:          "chainlink",
+									ContainerPort: 6688,
 								},
 							},
 							VolumeMounts: []corev1.VolumeMount{
@@ -284,7 +314,7 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: chainlinkNameRef,
+							Name: "nodes-pvc",
 							VolumeSource: corev1.VolumeSource{
 								HostPath: &corev1.HostPathVolumeSource{
 									Path: fmt.Sprintf("/mnt/data/nodes-volume/%s/%s/%s", network, networkEnv, nodeName),
@@ -303,10 +333,10 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 		metav1.CreateOptions{},
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "manager: Manager.ChainlinkNode m.clusterClient.AppsV1.Deployment.Create chainlink-deployment error")
+		return nil, errors.Wrap(err, "manager: Manager.ChainlinkNode m.clusterClient.AppsV1().Deployment.Create chainlink-deployment error")
 	}
 
-	log.Printf("[MANAGER] Chainlink-postgres deployment <%s> created succesfully", psqlNameRef)
+	log.Printf("[MANAGER] Chainlink-node deployment <%s> created [DONE ✔︎]", chainlinkNameRef)
 
 	return &NodeInstance{
 		ID:        nodeID,
@@ -340,7 +370,7 @@ func (m *Manager) chainlinkBasics(networkDir, nodePwd, email, emailPwd string) e
 	}
 	log.Printf("[MANAGER] file created %s/password.txt\n", networkDir)
 
-	creds := fmt.Sprintf("%s\n%s", email, emailPwd)
+	creds := fmt.Sprintf("%s\n%s\n", email, emailPwd)
 	err = ioutil.WriteFile(fmt.Sprintf("%s/creds.txt", networkDir), []byte(creds), 0644)
 	if err != nil {
 		return errors.Wrap(err, "manager: Manager.createChainlinkBasics ioutil.WriteFile creds.txt error")
