@@ -34,9 +34,6 @@ var (
 	}
 
 	chainlinkContainerEnvList = []string{
-		//"DATABASE_URL",          // HANDLED
-		//"ROOT",                  // HANDLED
-
 		"ENVIRONMENT",    // FROM REQUEST
 		"ETH_URL",        // FROM REQUEST
 		"PASSWORD",       // FROM REQUEST
@@ -63,30 +60,6 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 	}
 
 	envVars := make([]corev1.EnvVar, 0)
-	// user provided env vars
-	envVars, err = getEnvVars(chainlinkContainerEnvList, env, envVars)
-	if err != nil {
-		return nil, errors.Wrap(err, "manager: getEnvVars error")
-	}
-
-	// default env vars
-	defaultEnvKeys := make([]string, 0, len(chainlinkDefaultEnvVars))
-	for k := range chainlinkDefaultEnvVars {
-		defaultEnvKeys = append(defaultEnvKeys, k)
-	}
-	envVars, _ = getEnvVars(defaultEnvKeys, chainlinkDefaultEnvVars, envVars)
-
-	// network related env vars
-	networkEnvKeys := make([]string, 0, len(chainlinkNetworkEnvVars[networkEnv]))
-	for k := range chainlinkDefaultEnvVars {
-		networkEnvKeys = append(defaultEnvKeys, k)
-	}
-	envVars, _ = getEnvVars(networkEnvKeys, chainlinkNetworkEnvVars[networkEnv], envVars)
-
-	for _, v := range envVars {
-		log.Printf("ENV VAR - %+v\n", v)
-	}
-
 	// ## Handle env vars
 	// TODO: use dynamic password
 	dbPass := "ThisPasswordIsSecure"
@@ -102,6 +75,31 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 			Value: fmt.Sprintf("/%s", nodeName),
 		},
 	}...)
+
+	// user provided env vars
+	providedEnvVars := getFromMap(env)
+	//providedEnvVars, err := getEnvVars(chainlinkContainerEnvList, env)
+	//if err != nil {
+	//return nil, errors.Wrap(err, "manager: getEnvVars providedEnvVars error")
+	//}
+
+	// default env vars
+	defaultEnvVars := getFromMap(chainlinkDefaultEnvVars)
+
+	// network related env vars
+	networkEnvVars := getFromMap(chainlinkNetworkEnvVars[networkEnv])
+
+	// merge env vars
+	containerEnvVars := mergeEnvVars(
+		envVars,
+		providedEnvVars,
+		defaultEnvVars,
+		networkEnvVars,
+	)
+
+	for _, v := range containerEnvVars {
+		log.Printf("[MANAGER] ENV VAR - %+v\n", v)
+	}
 
 	arts := &Artifacts{
 		Deployments: []string{},
@@ -297,7 +295,7 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 								"--api",
 								fmt.Sprintf("/%s/creds.txt", nodeName),
 							},
-							Env: envVars,
+							Env: containerEnvVars,
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "chainlink",
