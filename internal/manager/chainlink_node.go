@@ -77,11 +77,8 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 	}...)
 
 	// user provided env vars
+	// TODO: validate provided env vars
 	providedEnvVars := getFromMap(env)
-	//providedEnvVars, err := getEnvVars(chainlinkContainerEnvList, env)
-	//if err != nil {
-	//return nil, errors.Wrap(err, "manager: getEnvVars providedEnvVars error")
-	//}
 
 	// default env vars
 	defaultEnvVars := getFromMap(chainlinkDefaultEnvVars)
