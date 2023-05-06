@@ -2,11 +2,12 @@ package api
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/darchlabs/nodes/internal/manager"
 	"github.com/darchlabs/nodes/internal/storage"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 type ServerConfig struct {
@@ -31,10 +32,15 @@ type Context struct {
 func NewServer(config *ServerConfig) *Server {
 
 	server := fiber.New()
-	server.Use(cors.New())
+	server.Use(logger.New())
+	server.Use(logger.New(logger.Config{
+		Format:     "[${ip}]:${port} ${status} - ${method} ${path}\n",
+		TimeFormat: "2006-01-02 15:04:05",
+		Output:     os.Stdout,
+	}))
 
 	return &Server{
-		server:       fiber.New(),
+		server:       server,
 		port:         config.Port,
 		nodesManager: config.Manager,
 	}
@@ -48,8 +54,7 @@ func (s *Server) Start(store storage.DataStore) error {
 		}
 		// route endpoints
 		routeNodeEndpoints("/api/v1/nodes", ctx)
-
-		// cors
+		routeV2Endpoints(ctx)
 
 		// proxy requests for node
 		s.server.All("jsonrpc/:node_id", proxyFunc(ctx))

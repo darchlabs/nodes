@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var ErrNodeNotFound = errors.New("node not found")
+var ErrNodeNotFound = errors.New("manager: node not found")
 
 func (m *Manager) Get(id string) (*NodeInstance, error) {
 	nodeInstance, ok := m.nodes[id]

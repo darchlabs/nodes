@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu
+  labels:
+    app: ubuntu
+spec:
+  containers:
+    - name: ubuntu
+      image: ubuntu:latest
+      command: ["/bin/sh", "-c"]
+      args: ["apt-get update && apt-get install -y curl redis && /bin/sleep 3650d"]
+      imagePullPolicy: IfNotPresent
+  restartPolicy: Always

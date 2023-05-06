@@ -5,6 +5,7 @@
 # .gitignore for Geth 0.4.16
 
 # caches
+kubeconfig.yml
 /geth
 /keystore
 history

@@ -1,0 +1,140 @@
+# Config map
+#apiVersion: v1
+#kind: ConfigMap
+#metadata:
+  #name: postgres-config
+#data:
+  #POSTGRES_DB: postgres
+  #POSTGRES_USER: postgres
+  #POSTGRES_PASSWORD: ThisPasswordIsSecure
+
+---
+
+# Service to reach postgres db
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  clusterIP: None
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:13
+          env:
+            - name: POSTGRES_DB
+              value: "postgres"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: ThisPasswordIsSecure
+          ports:
+            - containerPort: 5432
+              name: postgres
+
+          volumeMounts:
+            - name: postgres-db
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-db
+          hostPath:
+            path: /mnt/data/postgres-db
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chainlink-node
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chainlink-node
+  template:
+    metadata:
+      labels:
+        app: chainlink-node
+    spec:
+      containers:
+        - name: chainlink-node
+          image: smartcontract/chainlink:1.13.1-root
+          args: ["node", "start", "--password",  "/chainlink/password.txt", "--api", "/chainlink/creds.txt"]
+          env:
+            - name: ROOT
+              value: "/chainlink"
+            - name: LOG_LEVEL
+              value: "debug"
+            - name: MIN_OUTGOING_CONFIRMATIONS
+              value: "2"
+            - name: ETH_CHAIN_ID
+              value: "11155111"
+            - name: ETH_URL
+              value: "wss://ancient-smart-shadow.ethereum-sepolia.quiknode.pro/481affad55cac7efcbcc1182e4e435107aee7fae/"
+            - name: DATABASE_URL
+              value: "postgres://postgres:ThisPasswordIsSecure@postgres:5432/postgres?sslmode=disable"
+            - name: LINK_CONTRACT_ADDRESS
+              value: "0x779877A7B0D9E8603169DdbD7836e478b4624789"
+            - name: CHAINLINK_TLS_PORT
+              value: "0"
+            - name: SECURE_COOKIES
+              value: "false"
+            - name: GAS_UPDATER_ENABLED
+              value: "true"
+            - name: FEATURE_FLUX_MONITOR
+              value: "true"
+            - name: ALLOW_ORIGINS
+              value: "*"
+            - name: DATABASE_TIMEOUT
+              value: "0"
+            - name: CHAINLINK_EMAIL
+              value: "weare@darchlabs.com"
+          ports:
+            - containerPort: 6688
+              name: chainlink-node
+          volumeMounts:
+            - name: shared-data
+              mountPath: /chainlink
+
+      volumes:
+        - name: shared-data
+          hostPath:
+            path: /mnt/data/shared-data
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: chainlink-node
+spec:
+  selector:
+    app: chainlink-node
+  ports:
+    - protocol: TCP
+      port: 6688
+      targetPort: 6688
+  type: LoadBalancer
+

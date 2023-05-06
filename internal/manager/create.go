@@ -69,6 +69,20 @@ func (m *Manager) CreateNode(config *CreateNodeConfig) (*NodeInstance, error) {
 	return nodeInstance, nil
 }
 
+func (m *Manager) createDirIfNotExist(path string) error {
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) { // not exist
+		mkdir := command.New("mkdir", "-p", path)
+		err := mkdir.Start()
+
+		if err != nil {
+			return errors.Wrap(err, "manager: Manager.createDirIfNotExist mkdir.Start creating db dir error")
+		}
+	}
+
+	return nil
+}
+
 func existDir(path string) bool {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {

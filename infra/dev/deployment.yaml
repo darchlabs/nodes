@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodes
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      role: nodes
+  template:
+    metadata:
+      labels:
+        role: nodes
+    spec:
+      volumes:
+        - name: nodes-pvc
+          persistentVolumeClaim:
+            claimName: nodes-pvc
+
+      containers:
+      - name: nodes
+        image: darchlabs/nodes:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6969
+        readinessProbe:
+          httpGet:
+            path: /api/v2/health
+            port: 6969
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 6969
+          initialDelaySeconds: 1
+          periodSeconds: 5
+        volumeMounts:
+          - name: nodes-pvc
+            mountPath: /home/nodes/data
+        env:
+          - name: ENVIRONMENT
+            value: "development"
+          - name: API_SERVER_PORT
+            value: "6969"
+          - name: BASE_PATH_DATABASE
+            value: "data/"
+          - name: NETWORKS_URL
+            value: "ethereum:patient-delicate-pine.quiknode.pro/4200300eae9e45c661df02030bac8bc34f8b618e/,polygon:skilled-misty-morning.matic.quiknode.pro/9c6b0efce65cc906fec0275ac85da2385a8d8359/"
+          - name: REDIS_URL
+            value: "redis:6397"
+          - name: KUBECONFIG_FILE_PATH
+            value: "kubeconf.yml"
+          - name: KUBECONFIG_REMOTE_URL
+            value: "https://gist.githubusercontent.com/mtavano/c3fb472425fd2ff80bbacc76c86bc830/raw/8e8905368a8f69da750fb524eefa13a34f494be8/kubeconf.celo.yml"
+          - name: IMAGES
+            value: "evm$darchlabs/node-ethereum-dev:0.0.2"
+          - name: IMAGES_SUPPORTED
+            value: "evm$darchlabs/node-ethereum-dev:0.0.2"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodes
+spec:
+  ports:
+  - port: 6969
+    targetPort: 6969
+  selector:
+    role: nodes
