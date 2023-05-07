@@ -6,12 +6,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-var ErrNodeNotFound = errors.New("manager: node not found")
+var ErrNetworkNotFound = errors.New("manager: network not found")
 
 func (m *Manager) Get(id string) (*NodeInstance, error) {
 	nodeInstance, ok := m.nodes[id]
 	if !ok {
-		return nil, ErrNodeNotFound
+		return nil, ErrNetworkNotFound
 	}
 
 	return nodeInstance, nil

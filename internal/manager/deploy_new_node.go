@@ -2,15 +2,15 @@ package manager
 
 import "github.com/pkg/errors"
 
-type CreatePodOptions struct {
+type CreateDeploymentOptions struct {
 	Network string
 	EnvVars map[string]string
 }
 
-func (m *Manager) DeployNewNode(opts *CreatePodOptions) (*NodeInstance, error) {
+func (m *Manager) DeployNewNode(opts *CreateDeploymentOptions) (*NodeInstance, error) {
 	setupFunc, ok := m.networkNodeSetups[opts.Network]
 	if !ok {
-		return nil, ErrNodeNotFound
+		return nil, ErrNetworkNotFound
 	}
 
 	nodeInstace, err := setupFunc(opts.Network, opts.EnvVars)
