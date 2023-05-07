@@ -62,3 +62,18 @@ docker-node-img: docker-login
 	@echo "[docker] pushing $(REGISTRY_URL)/$(IMG):$(VERSION)"
 	@docker buildx create --use
 	@docker buildx build --platform linux/amd64,linux/arm64  --push -t $(DOCKER_USER)/node-$(IMG):$(VERSION)	-f ./images/$(IMG)/Dockerfile
+
+create-migration:
+	@echo "[create migration]"
+	@goose -dir=migrations/ create $(name)
+	@echo "migration migrations/$(name) created ✔︎"
+
+run-script:
+	@echo "[sun script]"
+	@export $$(cat node.env) && go run cmd/script/main.go
+	
+test:
+	@echo "[TEST]"
+	@export $$(cat node.env) && go test -p 1 -failfast -cover -race -v -count=1 ./...
+	@echo "Done ✔︎"
+
