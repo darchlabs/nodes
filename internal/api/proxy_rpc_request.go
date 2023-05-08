@@ -7,6 +7,7 @@ import (
 
 	"github.com/darchlabs/nodes/internal/manager"
 	"github.com/darchlabs/nodes/internal/storage"
+	"github.com/darchlabs/nodes/internal/storage/instance"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/proxy"
 	"github.com/pkg/errors"
@@ -21,25 +22,62 @@ type proxyRpcHandlerRequest struct {
 	ID      interface{}   `json:"id"`
 }
 
-func proxyFunc(ctx *Context) func(*fiber.Ctx) error {
+type ProxyHandler struct {
+	instanceSelectQuery instanceSelectQuery
+}
+
+func (h *ProxyHandler) invoke(ctx *Context) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		nodeID := c.Params("node_id")
 
-		nodeInstance, err := ctx.server.nodesManager.Get(nodeID)
-		if errors.Is(err, manager.ErrNetworkNotFound) {
-			c.SendStatus(fiber.StatusNotFound)
-			return nil
-		}
+		url, err := h.handleV1Search(nodeID, ctx)
 		if err != nil {
 			c.SendStatus(fiber.StatusInternalServerError)
 			return nil
 		}
-		nodeURL := fmt.Sprintf("http://localhost:%d/", nodeInstance.Config.Port)
+		if url != "" {
+			go saveOnRedis(ctx, c, nodeID)
+			return proxy.Do(c, url)
+		}
 
-		go saveOnRedis(ctx, c, nodeID)
+		url, err = h.handleV2Search(nodeID, ctx)
+		if err != nil {
+			c.SendStatus(fiber.StatusInternalServerError)
+			return nil
+		}
+		if url == "" {
+			c.SendStatus(fiber.StatusNotFound)
+			return nil
+		}
 
-		return proxy.Do(c, nodeURL)
+		return proxy.Do(c, url)
 	}
+}
+
+func (h *ProxyHandler) handleV1Search(nodeID string, ctx *Context) (string, error) {
+	nodeInstance, err := ctx.server.nodesManager.Get(nodeID)
+	if errors.Is(err, manager.ErrNetworkNotFound) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("http://localhost:%d/", nodeInstance.Config.Port), nil
+}
+
+func (h *ProxyHandler) handleV2Search(nodeID string, ctx *Context) (string, error) {
+	nodeInstance, err := h.instanceSelectQuery(ctx.sqlStore, &instance.SelectQueryInput{
+		ID: nodeID,
+	})
+	if errors.Is(err, instance.ErrNotFound) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("http://%s", nodeInstance.ServiceURL), nil
 }
 
 func saveOnRedis(ctx *Context, c *fiber.Ctx, nodeID string) {

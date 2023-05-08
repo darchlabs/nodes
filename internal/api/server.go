@@ -7,6 +7,7 @@ import (
 	"github.com/darchlabs/nodes/internal/application"
 	"github.com/darchlabs/nodes/internal/manager"
 	"github.com/darchlabs/nodes/internal/storage"
+	"github.com/darchlabs/nodes/internal/storage/instance"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
@@ -58,16 +59,20 @@ func NewServer(config *ServerConfig) *Server {
 func (s *Server) Start(app *application.App) error {
 	go func() {
 		ctx := &Context{
-			server:   s,
-			kvStore:  app.KeyValueStore,
-			sqlStore: app.SqlStore,
+			server:      s,
+			kvStore:     app.KeyValueStore,
+			sqlStore:    app.SqlStore,
+			nodeManager: app.Manager,
 		}
 		// route endpoints
 		routeNodeEndpoints("/api/v1/nodes", ctx)
 		routeV2Endpoints(ctx)
 
 		// proxy requests for node
-		s.server.All("jsonrpc/:node_id", proxyFunc(ctx))
+		proxy := &ProxyHandler{
+			instanceSelectQuery: instance.SelectQuery,
+		}
+		s.server.All("jsonrpc/:node_id", proxy.invoke(ctx))
 
 		// sever listen
 		fmt.Println("running")

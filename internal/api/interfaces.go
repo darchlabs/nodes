@@ -10,4 +10,6 @@ type nodeManager interface {
 	DeployNewNode(*manager.CreateDeploymentOptions) (*manager.NodeInstance, error)
 }
 
-type instanceInsertQuery func(tx storage.Transaction, record *instance.Record) error
+type instanceInsertQuery func(storage.Transaction, *instance.Record) error
+
+type instanceSelectQuery func(storage.Transaction, *instance.SelectQueryInput) (*instance.Record, error)
