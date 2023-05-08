@@ -1,16 +1,85 @@
+## Service for postgres
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-node
+spec:
+  selector:
+    app: postgres-node
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      name: "tcp"
+      port: 5432
+      targetPort: 5432
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-node
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-node
+  template:
+    metadata:
+      labels:
+        app: postgres-node
+    spec:
+      containers:
+        - name: postgres-node
+          image: postgres:13
+          env:
+            - name: POSTGRES_DB
+              value: "postgres"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "postgres"
+            - name: PGSSLMODE
+              value: "disable"
+          ports:
+            - containerPort: 5432
+
+          volumeMounts:
+            - name: postgres-db-node
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-db-node
+          hostPath:
+            path: /mnt/data/postgres-db-node
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodes
+spec:
+  selector:
+    app: nodes
+  type: ClusterIP
+  ports:
+  - port: 6969
+    name: "http"
+    targetPort: 6969
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nodes
-  namespace: default
 spec:
   selector:
     matchLabels:
-      role: nodes
+      app: nodes
   template:
     metadata:
       labels:
-        role: nodes
+        app: nodes
     spec:
       volumes:
         - name: nodes-pvc
@@ -52,19 +121,8 @@ spec:
             value: "kubeconf.yml"
           - name: KUBECONFIG_REMOTE_URL
             value: "https://gist.githubusercontent.com/mtavano/c3fb472425fd2ff80bbacc76c86bc830/raw/8e8905368a8f69da750fb524eefa13a34f494be8/kubeconf.celo.yml"
-          - name: IMAGES
-            value: "evm$darchlabs/node-ethereum-dev:0.0.2"
           - name: IMAGES_SUPPORTED
-            value: "evm$darchlabs/node-ethereum-dev:0.0.2"
+            value: "evm|darchlabs/node-ethereum-dev:0.0.2"
+          - name: POSTGRES_DSN
+            value: "postgres://postgres:postgres@postgres-node:5432/postgres?sslmode=disable"
 
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nodes
-spec:
-  ports:
-  - port: 6969
-    targetPort: 6969
-  selector:
-    role: nodes
