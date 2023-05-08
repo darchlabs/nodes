@@ -62,6 +62,7 @@ func (h *PostNewNodeV2Handler) invoke(ctx *Context, req *postNewNodev2HandlerReq
 		ID:          nodeInstance.ID,
 		Network:     nodeInstance.Config.Network,
 		Environment: nodeInstance.Config.Environment,
+<<<<<<< HEAD
 		ServiceURL:  fmt.Sprintf("http://%s:%d", nodeInstance.Name, nodeInstance.Config.Port),
 		Name:        nodeInstance.Name,
 		CreatedAt:   time.Now(),
@@ -70,6 +71,10 @@ func (h *PostNewNodeV2Handler) invoke(ctx *Context, req *postNewNodev2HandlerReq
 			Deployments: nodeInstance.Artifacts.Deployments,
 			Services:    nodeInstance.Artifacts.Services,
 		},
+=======
+		Name:        nodeInstance.Name,
+		CreatedAt:   time.Now(),
+>>>>>>> c30c8a7 (Update api to support sql database)
 	}
 
 	err = h.instanceInsertQuery(ctx.sqlStore, instanceRecord)

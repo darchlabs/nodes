@@ -59,10 +59,16 @@ func NewServer(config *ServerConfig) *Server {
 func (s *Server) Start(app *application.App) error {
 	go func() {
 		ctx := &Context{
+<<<<<<< HEAD
 			server:      s,
 			kvStore:     app.KeyValueStore,
 			sqlStore:    app.SqlStore,
 			nodeManager: app.Manager,
+=======
+			server:   s,
+			kvStore:  app.KeyValueStore,
+			sqlStore: app.SqlStore,
+>>>>>>> c30c8a7 (Update api to support sql database)
 		}
 		// route endpoints
 		routeNodeEndpoints("/api/v1/nodes", ctx)
