@@ -24,7 +24,7 @@ func getNodesMetricsHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error
 	for _, instance := range ctx.server.nodesManager.GetAll() {
 		metric := make([]*nodeMetric, 0)
 		for method := range config.ETHNodesMethods {
-			m, err := ctx.store.GetMethodMetric(context.Background(), &storage.GetMethodMetricInput{
+			m, err := ctx.kvStore.GetMethodMetric(context.Background(), &storage.GetMethodMetricInput{
 				NodeID: instance.ID,
 				Method: method,
 			})

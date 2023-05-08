@@ -5,9 +5,14 @@ import (
 	"time"
 
 	"github.com/darchlabs/nodes/internal/manager"
+	"github.com/darchlabs/nodes/internal/storage/instance"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
 )
+
+type PostNewNodeV2Handler struct {
+	instanceInsertQuery instanceInsertQuery
+}
 
 type postNewNodev2HandlerRequest struct {
 	Network string            `json:"network"`
@@ -25,22 +30,44 @@ type PostNewNodev2HandlerResponse struct {
 	CreatedAt   time.Time   `json:"createdAt"`
 }
 
-func postNewNodeV2Handler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
-	var req postNewNodev2HandlerRequest
+func (h *PostNewNodeV2Handler) Invoke(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
+	var req *postNewNodev2HandlerRequest
 	err := c.BodyParser(&req)
 	if err != nil {
 		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: postNewNodeV2Handler c.BodyParser")
 	}
 
-	nodeInstance, err := ctx.server.nodesManager.DeployNewNode(&manager.CreatePodOptions{
+	payload, status, err := h.invoke(ctx, req)
+	if err != nil {
+		return nil, status, errors.Wrap(err, "api: PostNewNodeV2Handler.Invoke h.invoke error")
+	}
+
+	return payload, status, nil
+}
+
+func (h *PostNewNodeV2Handler) invoke(ctx *Context, req *postNewNodev2HandlerRequest) (interface{}, int, error) {
+	nodeInstance, err := ctx.nodeManager.DeployNewNode(&manager.CreateDeploymentOptions{
 		Network: req.Network,
 		EnvVars: req.EnvVars,
 	})
-	if errors.Is(err, manager.ErrNodeNotFound) {
+	if errors.Is(err, manager.ErrNetworkNotFound) {
 		return nil, http.StatusNotFound, nil
 	}
 	if err != nil {
-		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: postNewNodeV2Handler ctx.server.nodesManager.DeployNewNode")
+		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: PostNewNodeV2Handler.invoke h.nodesManager.DeployNewNode")
+	}
+
+	instanceRecord := &instance.Record{
+		ID:          nodeInstance.ID,
+		Network:     nodeInstance.Config.Network,
+		Environment: nodeInstance.Config.Environment,
+		Name:        nodeInstance.Name,
+		CreatedAt:   time.Now(),
+	}
+
+	err = h.instanceInsertQuery(ctx.sqlStore, instanceRecord)
+	if err != nil {
+		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: PostNewNodeV2Handler.invoke instance.InsertQuery error")
 	}
 
 	return PostNewNodev2HandlerResponse{

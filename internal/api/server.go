@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/darchlabs/nodes/internal/application"
 	"github.com/darchlabs/nodes/internal/manager"
 	"github.com/darchlabs/nodes/internal/storage"
 	"github.com/gofiber/fiber/v2"
@@ -15,18 +16,26 @@ type ServerConfig struct {
 	Chain             string
 	BootstrapNodesURL map[string]string
 	Manager           *manager.Manager
+	App               *application.App
 }
 
 type Server struct {
 	server *fiber.App
+	app    *application.App
 	port   string
 
 	nodesManager *manager.Manager
 }
 
 type Context struct {
+	// structs
 	server *Server
-	store  storage.DataStore
+	app    *application.App
+
+	// interfaces
+	nodeManager nodeManager
+	kvStore     storage.KeyValue
+	sqlStore    storage.SQL
 }
 
 func NewServer(config *ServerConfig) *Server {
@@ -46,11 +55,12 @@ func NewServer(config *ServerConfig) *Server {
 	}
 }
 
-func (s *Server) Start(store storage.DataStore) error {
+func (s *Server) Start(app *application.App) error {
 	go func() {
 		ctx := &Context{
-			server: s,
-			store:  store,
+			server:   s,
+			kvStore:  app.KeyValueStore,
+			sqlStore: app.SqlStore,
 		}
 		// route endpoints
 		routeNodeEndpoints("/api/v1/nodes", ctx)

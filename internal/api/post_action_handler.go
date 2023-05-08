@@ -44,7 +44,7 @@ func postActionHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 	}
 
 	cmd, err := ctx.server.nodesManager.Get(req.NodeID)
-	if errors.Is(err, manager.ErrNodeNotFound) {
+	if errors.Is(err, manager.ErrNetworkNotFound) {
 		return nil, fiber.StatusNotFound, errors.Wrap(ErrNotFound, "api: postActionHandler ctx.server.nodesCommands unrecognized id")
 	}
 	if err != nil {

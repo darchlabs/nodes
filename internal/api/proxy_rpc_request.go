@@ -26,7 +26,7 @@ func proxyFunc(ctx *Context) func(*fiber.Ctx) error {
 		nodeID := c.Params("node_id")
 
 		nodeInstance, err := ctx.server.nodesManager.Get(nodeID)
-		if errors.Is(err, manager.ErrNodeNotFound) {
+		if errors.Is(err, manager.ErrNetworkNotFound) {
 			c.SendStatus(fiber.StatusNotFound)
 			return nil
 		}
@@ -43,7 +43,7 @@ func proxyFunc(ctx *Context) func(*fiber.Ctx) error {
 }
 
 func saveOnRedis(ctx *Context, c *fiber.Ctx, nodeID string) {
-	err := ctx.store.PutMethodMetric(context.Background(), &storage.PutMethodMetricInput{
+	err := ctx.kvStore.PutMethodMetric(context.Background(), &storage.PutMethodMetricInput{
 		NodeID: nodeID,
 		Method: c.Method(),
 	})
