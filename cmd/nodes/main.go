@@ -6,12 +6,13 @@ import (
 
 	"github.com/darchlabs/nodes/config"
 	"github.com/darchlabs/nodes/internal/api"
+	"github.com/darchlabs/nodes/internal/application"
 	"github.com/darchlabs/nodes/internal/command"
-	"github.com/darchlabs/nodes/internal/manager"
 	"github.com/darchlabs/nodes/internal/storage"
-	"github.com/darchlabs/nodes/pkg/namer"
-	"github.com/google/uuid"
+	_ "github.com/darchlabs/nodes/migrations"
 	"github.com/kelseyhightower/envconfig"
+	_ "github.com/lib/pq"
+	"github.com/pressly/goose/v3"
 )
 
 func main() {
@@ -20,33 +21,34 @@ func main() {
 	err := envconfig.Process("", conf)
 	check(err)
 
-	log.Printf("Database connection [darch node] done\n")
-	store, err := storage.NewDataStore(conf.RedisURL)
+	log.Printf("Database postgresql connection [darch node] done\n")
+	sqlStore, err := storage.NewSQLStore(conf.DBDriver, conf.PostgresDSN)
 	check(err)
 
-	nameGenerator, err := namer.New()
+	err = goose.Up(sqlStore.DB.DB, "migrations/")
 	check(err)
-	manager, err := manager.New(&manager.Config{
+
+	log.Printf("Database Redis connection [darch node] done\n")
+	kvStore, err := storage.NewKeyValueStore(conf.RedisURL)
+	check(err)
+
+	app, err := application.NewApp(&application.Config{
+		SqlStore:      sqlStore,
+		KeyValueStore: kvStore,
 		MainConfig:    conf,
-		IDGenerator:   uuid.NewString,
-		NameGenerator: nameGenerator,
-		// v1 config
-		BootstrapNodesURL: conf.NetworksURL,
-		BasePathDatabase:  conf.BasePathDatabase,
-		// v2 config
-		KubeConfigFilePath:  conf.KubeconfigFilePath,
-		KubeconfigRemoteURL: conf.KubeconfigRemoteURL,
 	})
 	check(err)
+	fmt.Println(app)
 
 	server := api.NewServer(&api.ServerConfig{
 		Port:              conf.ApiServerPort,
 		BootstrapNodesURL: conf.NetworksURL,
-		Manager:           manager,
+		Manager:           app.Manager,
+		App:               app,
 	})
 
 	log.Printf("Starting [darch node]\n")
-	err = server.Start(store)
+	err = server.Start(app)
 	check(err)
 
 	// listen interrupt
