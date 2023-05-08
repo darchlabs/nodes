@@ -1,8 +1,12 @@
 version: '3'
 
 services:
-  ethereum-node:
+  nodes:
     image: darchlabs/nodes # using image name tag
+    depends_on:
+      - postgres
+      - redis
+    restart: always
     env_file:
       - ./node.env
     restart: on-failure
@@ -18,4 +22,12 @@ services:
     volumes:
       - ../data/redis:/data-redis:rw
 
+  postgres:
+    image: postgres:13
+    ports:
+    - 5432:5432
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
 
