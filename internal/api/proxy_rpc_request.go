@@ -30,15 +30,9 @@ func (h *ProxyHandler) invoke(ctx *Context) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		nodeID := c.Params("node_id")
 
-<<<<<<< HEAD
 		url, err := h.handleV1Search(nodeID, ctx)
 		if err != nil {
 			c.Status(fiber.StatusInternalServerError).JSON(map[string]string{"error": err.Error()})
-=======
-		nodeInstance, err := ctx.server.nodesManager.Get(nodeID)
-		if errors.Is(err, manager.ErrNetworkNotFound) {
-			c.SendStatus(fiber.StatusNotFound)
->>>>>>> c30c8a7 (Update api to support sql database)
 			return nil
 		}
 		if url != "" {
@@ -57,7 +51,6 @@ func (h *ProxyHandler) invoke(ctx *Context) func(*fiber.Ctx) error {
 			return nil
 		}
 
-		fmt.Println("~~~~~~> FORWARDED V2 TO ", url)
 		return proxy.Do(c, url)
 	}
 }
