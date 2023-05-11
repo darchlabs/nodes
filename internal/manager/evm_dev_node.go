@@ -33,6 +33,37 @@ func (m *Manager) EvmDevNode(network string, env map[string]string) (*NodeInstan
 		Services: []string{containerName},
 	}
 
+	service := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: containerName,
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: map[string]string{
+				"role": containerName,
+				"app":  containerName,
+			},
+			Ports: []corev1.ServicePort{
+				{
+					Name:       "http",
+					Protocol:   corev1.ProtocolTCP,
+					Port:       8545,                 // TODO: make it dynamic
+					TargetPort: intstr.FromInt(8545), // TODO: make it dynamic
+				},
+			},
+			Type: corev1.ServiceTypeClusterIP,
+		},
+	}
+
+	// Create the new pod
+	_, err := m.clusterClient.CoreV1().Services("default").Create(
+		context.Background(),
+		service,
+		metav1.CreateOptions{},
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "manager: evmNode m.clusterClient.CoreV1().Services().Create")
+	}
+
 	// TODO: define this as deployment so k8s can be in charge of restart nodes
 	// Define the new pod
 	pod := &corev1.Pod{
@@ -52,8 +83,7 @@ func (m *Manager) EvmDevNode(network string, env map[string]string) (*NodeInstan
 					ImagePullPolicy: corev1.PullIfNotPresent,
 					Ports: []corev1.ContainerPort{
 						{
-							ContainerPort: 8544, // TODO: make it dynamic
-							HostPort:      8545, // TODO: make it dynamic
+							ContainerPort: 8545, // TODO: make it dynamic
 							Name:          "http",
 							Protocol:      corev1.ProtocolTCP,
 						},
@@ -64,7 +94,7 @@ func (m *Manager) EvmDevNode(network string, env map[string]string) (*NodeInstan
 		},
 	}
 
-	_, err := m.clusterClient.CoreV1().Pods("default").Create(
+	_, err = m.clusterClient.CoreV1().Pods("default").Create(
 		context.Background(),
 		pod,
 		metav1.CreateOptions{},
@@ -72,37 +102,6 @@ func (m *Manager) EvmDevNode(network string, env map[string]string) (*NodeInstan
 	if err != nil {
 		fmt.Println("--ERROR-- ", err.Error())
 		return nil, errors.Wrap(err, "manager: evmNode m.clusterClient.CoreV1().Pods().Create")
-	}
-
-	service := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: containerName,
-		},
-		Spec: corev1.ServiceSpec{
-			Selector: map[string]string{
-				"role": containerName,
-				"app":  containerName,
-			},
-			Ports: []corev1.ServicePort{
-				{
-					Port:       8545,                 // TODO: make it dynamic
-					TargetPort: intstr.FromInt(8545), // TODO: make it dynamic
-					Name:       "http",
-					Protocol:   corev1.ProtocolTCP,
-				},
-			},
-			Type: corev1.ServiceTypeClusterIP,
-		},
-	}
-
-	// Create the new pod
-	_, err = m.clusterClient.CoreV1().Services("default").Create(
-		context.Background(),
-		service,
-		metav1.CreateOptions{},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "manager: evmNode m.clusterClient.CoreV1().Services().Create")
 	}
 
 	return &NodeInstance{
