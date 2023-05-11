@@ -51,6 +51,7 @@ func (h *ProxyHandler) invoke(ctx *Context) func(*fiber.Ctx) error {
 			return nil
 		}
 
+		fmt.Println("~~~~~~> FORWARDED V2 TO ", url)
 		return proxy.Do(c, url)
 	}
 }
