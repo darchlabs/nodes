@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -61,6 +62,7 @@ func (h *PostNewNodeV2Handler) invoke(ctx *Context, req *postNewNodev2HandlerReq
 		ID:          nodeInstance.ID,
 		Network:     nodeInstance.Config.Network,
 		Environment: nodeInstance.Config.Environment,
+		ServiceURL:  fmt.Sprintf("http://%s:%d", nodeInstance.Name, nodeInstance.Config.Port),
 		Name:        nodeInstance.Name,
 		CreatedAt:   time.Now(),
 		Artifacts: &instance.Artifacts{

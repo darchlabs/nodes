@@ -32,17 +32,18 @@ func (h *ProxyHandler) invoke(ctx *Context) func(*fiber.Ctx) error {
 
 		url, err := h.handleV1Search(nodeID, ctx)
 		if err != nil {
-			c.SendStatus(fiber.StatusInternalServerError)
+			c.Status(fiber.StatusInternalServerError).JSON(map[string]string{"error": err.Error()})
 			return nil
 		}
 		if url != "" {
+			fmt.Println("~~~~~~> FORWARDED TO ", url)
 			go saveOnRedis(ctx, c, nodeID)
 			return proxy.Do(c, url)
 		}
 
 		url, err = h.handleV2Search(nodeID, ctx)
 		if err != nil {
-			c.SendStatus(fiber.StatusInternalServerError)
+			c.Status(fiber.StatusInternalServerError).JSON(map[string]string{"error": err.Error()})
 			return nil
 		}
 		if url == "" {
@@ -50,6 +51,7 @@ func (h *ProxyHandler) invoke(ctx *Context) func(*fiber.Ctx) error {
 			return nil
 		}
 
+		fmt.Println("~~~~~~> FORWARDED V2 TO ", url)
 		return proxy.Do(c, url)
 	}
 }
@@ -77,7 +79,7 @@ func (h *ProxyHandler) handleV2Search(nodeID string, ctx *Context) (string, erro
 		return "", err
 	}
 
-	return fmt.Sprintf("http://%s", nodeInstance.ServiceURL), nil
+	return fmt.Sprintf("%s", nodeInstance.ServiceURL), nil
 }
 
 func saveOnRedis(ctx *Context, c *fiber.Ctx, nodeID string) {
