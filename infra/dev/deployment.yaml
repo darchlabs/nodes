@@ -120,7 +120,7 @@ spec:
           - name: KUBECONFIG_FILE_PATH
             value: "kubeconf.yml"
           - name: KUBECONFIG_REMOTE_URL
-            value: "https://gist.githubusercontent.com/mtavano/c3fb472425fd2ff80bbacc76c86bc830/raw/8e8905368a8f69da750fb524eefa13a34f494be8/kubeconf.celo.yml"
+            value: "https://gist.githubusercontent.com/mtavano/c3fb472425fd2ff80bbacc76c86bc830/raw/b1ff5476dd3c41447fd7e6d2fe808386a66a04b4/kubeconf.celo.yml"
           - name: IMAGES_SUPPORTED
             value: "evm|darchlabs/node-ethereum-dev:0.0.2"
           - name: POSTGRES_DSN
