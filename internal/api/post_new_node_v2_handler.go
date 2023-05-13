@@ -70,8 +70,6 @@ func (h *PostNewNodeV2Handler) invoke(ctx *Context, req *postNewNodev2HandlerReq
 			Deployments: nodeInstance.Artifacts.Deployments,
 			Services:    nodeInstance.Artifacts.Services,
 		},
-		Name:      nodeInstance.Name,
-		CreatedAt: time.Now(),
 	}
 
 	err = h.instanceInsertQuery(ctx.sqlStore, instanceRecord)
