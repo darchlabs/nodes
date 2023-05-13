@@ -34,7 +34,7 @@ func Test_SelectQuery_Integration(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		record, err := SelectQuery(tx, &SelectQueryInput{ID: expectedID})
+		record, err := SelectByIDQuery(tx, &SelectQueryInput{ID: expectedID})
 
 		require.NoError(t, err)
 		require.Equal(t, expectedID, record.ID)
