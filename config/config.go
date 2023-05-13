@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strings"
 )
@@ -20,7 +19,9 @@ type Config struct {
 	MasterURL     string `envconfig:"-" default:"http://master.darchlabs.com/nodes/status"`
 
 	// database config
-	RedisURL string `envconfig:"redis_url" required:"true"`
+	RedisURL    string `envconfig:"redis_url" required:"true"`
+	DBDriver    string `envconfig:"db_driver" default:"postgres"`
+	PostgresDSN string `envconfig:"postgres_dsn" required:"true"`
 
 	// kubernetes config
 	KubeconfigFilePath  string `envconfig:"kubeconfig_file_path" required:"true"`
@@ -37,9 +38,7 @@ func (c *Config) ParseImages() map[string]string {
 
 	for _, pair := range strings.Split(imgs, ",") {
 		// network $ image:version
-		values := strings.Split(pair, "$")
-		fmt.Println(values[0], "---", values[1])
-
+		values := strings.Split(pair, "|")
 		images[values[0]] = values[1]
 	}
 	return images

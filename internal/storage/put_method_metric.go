@@ -14,7 +14,7 @@ type PutMethodMetricInput struct {
 	Method string
 }
 
-func (s *Store) PutMethodMetric(ctx context.Context, input *PutMethodMetricInput) error {
+func (s *KVStore) PutMethodMetric(ctx context.Context, input *PutMethodMetricInput) error {
 	key := fmt.Sprintf("%s-%s", input.NodeID, input.Method)
 
 	result, err := s.db.Get(ctx, key).Result()

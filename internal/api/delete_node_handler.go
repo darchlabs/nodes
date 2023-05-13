@@ -18,7 +18,7 @@ func deleteNodeHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 	}
 
 	cmd, err := ctx.server.nodesManager.Get(req.NodeID)
-	if errors.Is(err, manager.ErrNodeNotFound) {
+	if errors.Is(err, manager.ErrNetworkNotFound) {
 		return nil, fiber.StatusNotFound, errors.Wrap(ErrNotFound, "api: deleteNodeHandler ctx.server.nodeConfig unrecognized id")
 	}
 	if err != nil {

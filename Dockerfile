@@ -13,5 +13,6 @@ FROM golang:alpine as runner
 WORKDIR /home/nodes
 
 COPY --from=builder /usr/src/app/nodes /home/nodes
+COPY --from=builder /usr/src/app/migrations /home/nodes/migrations
 
 CMD ["./nodes"]

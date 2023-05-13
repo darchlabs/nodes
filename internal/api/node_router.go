@@ -2,8 +2,6 @@ package api
 
 import (
 	"fmt"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 func routeNodeEndpoints(prefix string, ctx *Context) {
@@ -12,11 +10,4 @@ func routeNodeEndpoints(prefix string, ctx *Context) {
 	ctx.server.server.Delete(fmt.Sprintf("%s", prefix), handleFunc(ctx, deleteNodeHandler))
 	ctx.server.server.Get(fmt.Sprintf("%s/status", prefix), handleFunc(ctx, getStatusHandler))
 	ctx.server.server.Get(fmt.Sprintf("%s/metrics", prefix), handleFunc(ctx, getNodesMetricsHandler))
-}
-
-func routeV2Endpoints(ctx *Context) {
-	ctx.server.server.Get("/api/v2/health", handleFunc(ctx, func(_ *Context, _ *fiber.Ctx) (interface{}, int, error) {
-		return map[string]string{"status": "runnin"}, fiber.StatusOK, nil
-	}))
-	ctx.server.server.Post("/api/v2/nodes", handleFunc(ctx, postNewNodeV2Handler))
 }

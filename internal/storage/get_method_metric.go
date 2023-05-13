@@ -20,7 +20,7 @@ type GetMethodMetricInput struct {
 	NodeID string
 }
 
-func (s *Store) GetMethodMetric(ctx context.Context, input *GetMethodMetricInput) (*MethodMetricRecord, error) {
+func (s *KVStore) GetMethodMetric(ctx context.Context, input *GetMethodMetricInput) (*MethodMetricRecord, error) {
 	key := fmt.Sprintf("%s-%s", input.NodeID, input.Method)
 	result, err := s.db.Get(ctx, key).Result()
 	switch true {
