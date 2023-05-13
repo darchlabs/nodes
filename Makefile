@@ -74,6 +74,6 @@ run-script:
 	
 test:
 	@echo "[TEST]"
-	@export $$(cat node.env) && go test -p 1 -failfast -cover -race -v -count=1 ./...
+	@export $$(cat test.env) && go test -p 1 -failfast -cover -race -v -count=1 ./...
 	@echo "Done ✔︎"
 
