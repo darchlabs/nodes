@@ -85,6 +85,7 @@ func (h *PostNewNodeV2Handler) invoke(ctx *Context, req *postNewNodev2HandlerReq
 		Network:     nodeInstance.Config.Network,
 		Environment: nodeInstance.Config.Environment,
 		Artifacts:   nodeInstance.Artifacts,
+		Status:      "running", // update status with real status
 		Port:        nodeInstance.Config.Port,
 		CreatedAt:   nodeInstance.Config.CreatedAt,
 	}, fiber.StatusCreated, nil

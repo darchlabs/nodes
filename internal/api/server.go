@@ -82,7 +82,7 @@ func (s *Server) Start(app *application.App) error {
 
 		// proxy requests for node
 		proxy := &ProxyHandler{
-			instanceSelectQuery: instance.SelectQuery,
+			instanceSelectQuery: instance.SelectByIDQuery,
 		}
 		s.server.All("jsonrpc/:node_id", proxy.invoke(ctx))
 

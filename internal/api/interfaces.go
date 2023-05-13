@@ -13,3 +13,5 @@ type nodeManager interface {
 type instanceInsertQuery func(storage.Transaction, *instance.Record) error
 
 type instanceSelectQuery func(storage.Transaction, *instance.SelectQueryInput) (*instance.Record, error)
+
+type instanceSelectAllQuery func(storage.Transaction) ([]*instance.Record, error)
