@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: celo-node-service
+spec:
+  selector:
+    app: celo-node
+  ports:
+    - protocol: TCP
+      name: "tcp"
+      port: 8545
+      targetPort: 8545
+    - protocol: TCP
+      name: "ws"
+      port: 8546
+      targetPort: 8546
+    - protocol: TCP
+      name: "p2p"
+      port: 30303
+      targetPort: 30303
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celo-node-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celo-node
+  template:
+    metadata:
+      labels:
+        app: celo-node
+    spec:
+      containers:
+        - name: celo-node
+          image: us.gcr.io/celo-org/geth:alfajores
+          args:
+            - "--verbosity"
+            - "3"
+            - "--syncmode"
+            - "full"
+            - "--http"
+            - "--http.addr"
+            - "0.0.0.0"
+            - "--http.api"
+            - "eth,net,web3,debug,admin,personal"
+            - "--light.serve"
+            - "90"
+            - "--light.maxpeers"
+            - "1000"
+            - "--maxpeers"
+            - "1100"
+            - "--alfajores"
+            - "--datadir"
+            - "/root/.celo"
+          env:
+            - name: CELO_ACCOUNT_PASSWORD
+              value: "ThisPasswordIsSecure"
+          ports:
+            - containerPort: 8545
+            - containerPort: 8546
+            - containerPort: 30303
+          volumeMounts:
+            - mountPath: /root/.celo
+              name: celo-data-dir
+      initContainers:
+        - name: celo-account-creator
+          image: us.gcr.io/celo-org/geth:alfajores
+          command: ["/bin/sh", "-c"]
+          args:
+            - "echo $CELO_ACCOUNT_PASSWORD > /root/.celo/password.txt && /usr/local/bin/geth account new --password /root/.celo/password.txt"
+          env:
+            - name: CELO_ACCOUNT_PASSWORD
+              value: "ThisPasswordIsSecure"
+          volumeMounts:
+            - mountPath: /root/.celo
+              name: celo-data-dir
+      volumes:
+        - name: celo-data-dir
+          emptyDir: {}
+
