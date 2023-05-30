@@ -30,6 +30,6 @@ func deleteNodeHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: deleteNodeHandler node.cmd.Stop error")
 	}
 
-	ctx.server.nodesManager.Delete(cmd.ID)
+	ctx.server.nodesManager.DeleteInstance(cmd.ID)
 	return nil, fiber.StatusOK, nil
 }

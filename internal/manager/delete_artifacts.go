@@ -8,7 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (m *Manager) DeleteArtifacts(arts *Artifacts) error {
+func (m *Manager) DeleteNode(arts *Artifacts) error {
 	ctx := context.Background()
 
 	// Delete Services

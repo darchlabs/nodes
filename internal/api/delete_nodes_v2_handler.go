@@ -46,7 +46,7 @@ func (h *DeleteNodesV2Handler) invoke(ctx *Context, req *deleteNodesV2HandlerReq
 	}
 
 	// delete artifacts
-	err = ctx.nodeManager.DeleteArtifacts(&manager.Artifacts{
+	err = ctx.nodeManager.DeleteNode(&manager.Artifacts{
 		Deployments: instanceRecord.Artifacts.Deployments,
 		Pods:        instanceRecord.Artifacts.Pods,
 		Services:    instanceRecord.Artifacts.Services,
