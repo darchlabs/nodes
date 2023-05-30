@@ -15,7 +15,7 @@ func (m *mockNodeManager) DeployNewNode(_ *manager.CreateDeploymentOptions) (*ma
 	return m.res, m.err
 }
 
-func (m *mockNodeManager) DeleteNode(_ *manager.Artifacts) error {
+func (m *mockNodeManager) DeleteNode(_ *manager.NodeInstance) error {
 	return m.err
 }
 

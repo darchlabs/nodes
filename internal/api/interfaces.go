@@ -8,7 +8,7 @@ import (
 
 type nodeManager interface {
 	DeployNewNode(*manager.CreateDeploymentOptions) (*manager.NodeInstance, error)
-	DeleteNode(*manager.Artifacts) error
+	DeleteNode(*manager.NodeInstance) error
 }
 
 type instanceInsertQuery func(storage.Transaction, *instance.Record) error

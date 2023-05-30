@@ -46,10 +46,18 @@ func (h *DeleteNodesV2Handler) invoke(ctx *Context, req *deleteNodesV2HandlerReq
 	}
 
 	// delete artifacts
-	err = ctx.nodeManager.DeleteNode(&manager.Artifacts{
-		Deployments: instanceRecord.Artifacts.Deployments,
-		Pods:        instanceRecord.Artifacts.Pods,
-		Services:    instanceRecord.Artifacts.Services,
+	err = ctx.nodeManager.DeleteNode(&manager.NodeInstance{
+		ID:   instanceRecord.ID,
+		Name: instanceRecord.Name,
+		Config: &manager.NodeConfig{
+			Network:     instanceRecord.Network,
+			Environment: instanceRecord.Environment,
+		},
+		Artifacts: &manager.Artifacts{
+			Deployments: instanceRecord.Artifacts.Deployments,
+			Pods:        instanceRecord.Artifacts.Pods,
+			Services:    instanceRecord.Artifacts.Services,
+		},
 	})
 	if err != nil {
 		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: DeleteNodesV2HandlerRequest.invoke ctx.nodeManager.DeleteArtifacts error")
@@ -61,6 +69,9 @@ func (h *DeleteNodesV2Handler) invoke(ctx *Context, req *deleteNodesV2HandlerReq
 		ID:        req.ID,
 		DeletedAt: &now,
 	})
+	if err != nil {
+		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: DeleteNodesV2HandlerRequest.invoke h.instanceUpdateQuery error")
+	}
 
 	return nil, fiber.StatusNoContent, nil
 }
