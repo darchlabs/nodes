@@ -20,7 +20,7 @@ func upCreateTableInstances(tx *sql.Tx) error {
 			name TEXT UNIQUE NOT NULL,
 			service_url TEXT NOT NULL,
 			artifacts JSONB NOT NULL,
-			created_at timestamptz NOT NULL
+			created_at TIMESTAMPTZ NOT NULL
 		);`)
 	return err
 }
