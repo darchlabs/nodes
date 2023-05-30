@@ -13,7 +13,7 @@ type SelectQueryInput struct {
 	ID string
 }
 
-func SelectByIDQuery(tx storage.Transaction, input *SelectQueryInput) (*Record, error) {
+func SelectQuery(tx storage.Transaction, input *SelectQueryInput) (*Record, error) {
 	var record Record
 	err := tx.Get(&record, `SELECT * FROM instances WHERE id = $1;`, input.ID)
 	if errors.Is(err, sql.ErrNoRows) {
