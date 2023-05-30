@@ -15,6 +15,10 @@ func (m *mockNodeManager) DeployNewNode(_ *manager.CreateDeploymentOptions) (*ma
 	return m.res, m.err
 }
 
+func (m *mockNodeManager) DeleteArtifacts(_ *manager.Artifacts) error {
+	return m.err
+}
+
 type mockInstanceInsertQuery struct {
 	err error
 }

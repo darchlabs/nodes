@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/darchlabs/nodes/internal/manager"
@@ -32,13 +31,13 @@ type PostNewNodev2HandlerResponse struct {
 }
 
 func (h *PostNewNodeV2Handler) Invoke(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
-	var req *postNewNodev2HandlerRequest
+	var req postNewNodev2HandlerRequest
 	err := c.BodyParser(&req)
 	if err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: postNewNodeV2Handler c.BodyParser")
+		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: PostNewNodeV2Handler.Invoke c.BodyParser")
 	}
 
-	payload, status, err := h.invoke(ctx, req)
+	payload, status, err := h.invoke(ctx, &req)
 	if err != nil {
 		return nil, status, errors.Wrap(err, "api: PostNewNodeV2Handler.Invoke h.invoke error")
 	}
@@ -52,7 +51,7 @@ func (h *PostNewNodeV2Handler) invoke(ctx *Context, req *postNewNodev2HandlerReq
 		EnvVars: req.EnvVars,
 	})
 	if errors.Is(err, manager.ErrNetworkNotFound) {
-		return nil, http.StatusNotFound, nil
+		return nil, fiber.StatusNotFound, nil
 	}
 	if err != nil {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: PostNewNodeV2Handler.invoke h.nodesManager.DeployNewNode")
