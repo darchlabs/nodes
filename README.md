@@ -2,9 +2,9 @@
 
 --
 
-Run nodes made easy. With nodes you will run blockchain nodes on deman through a simple an easy to use API.
+Enhance your blockchain experience with effortless node execution, thanks to our intuitive API.
+Enjoy a frictionless process as you effortlessly run and manage blockchain nodes with ease.
 
-Nodes support evm blockchains for the moment, you only need to provide the desired chain url in order to fork them.
 
 ### How to run nodes?
 --
