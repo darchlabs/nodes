@@ -15,6 +15,8 @@ type Record struct {
 	ServiceURL  string     `db:"service_url"`
 	Artifacts   *Artifacts `json:"artifacts"`
 	CreatedAt   time.Time  `db:"created_at"`
+	UpdatedAt   *time.Time `db:"updated_at"`
+	DeletedAt   *time.Time `db:"deleted_at"`
 }
 
 type Artifacts struct {

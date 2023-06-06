@@ -350,11 +350,11 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 func (m *Manager) chainlinkBasics(networkDir, nodePwd, email, emailPwd string) error {
 	// 1. check folder exist
 	//		create folder for chainlink if not exist
-	log.Printf("[MANAGER] directory created %s\n", networkDir)
 	err := m.createDirIfNotExist(networkDir)
 	if err != nil {
 		return errors.Wrap(err, "manager: Manager.createChainlinkBasics exist error")
 	}
+	log.Printf("[MANAGER] directory created %s\n", networkDir)
 
 	time.Sleep(1 * time.Second)
 	// 2. create files

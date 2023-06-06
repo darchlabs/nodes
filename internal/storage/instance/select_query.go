@@ -20,7 +20,7 @@ func SelectQuery(tx storage.Transaction, input *SelectQueryInput) (*Record, erro
 		return nil, ErrNotFound
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, "instance: SelectQuery tx.Get error")
+		return nil, errors.Wrap(err, "instance: SelectAllQuery tx.Get error")
 	}
 	return &record, nil
 }

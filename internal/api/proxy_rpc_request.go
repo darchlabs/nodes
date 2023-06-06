@@ -36,7 +36,6 @@ func (h *ProxyHandler) invoke(ctx *Context) func(*fiber.Ctx) error {
 			return nil
 		}
 		if url != "" {
-			fmt.Println("~~~~~~> FORWARDED TO ", url)
 			go saveOnRedis(ctx, c, nodeID)
 			return proxy.Do(c, url)
 		}
@@ -51,7 +50,6 @@ func (h *ProxyHandler) invoke(ctx *Context) func(*fiber.Ctx) error {
 			return nil
 		}
 
-		fmt.Println("~~~~~~> FORWARDED V2 TO ", url)
 		return proxy.Do(c, url)
 	}
 }

@@ -19,7 +19,6 @@ func main() {
 	// Initialize db connection
 	storage, err := storage.NewSQLStore(conf.DBDriver, conf.PostgresDSN)
 	check(err)
-	fmt.Println(storage)
 
 	err = goose.Up(storage.DB.DB, "migrations/")
 	check(err)

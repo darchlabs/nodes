@@ -100,7 +100,6 @@ func (m *Manager) EvmDevNode(network string, env map[string]string) (*NodeInstan
 		metav1.CreateOptions{},
 	)
 	if err != nil {
-		fmt.Println("--ERROR-- ", err.Error())
 		return nil, errors.Wrap(err, "manager: evmNode m.clusterClient.CoreV1().Pods().Create")
 	}
 

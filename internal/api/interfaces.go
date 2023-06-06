@@ -8,8 +8,13 @@ import (
 
 type nodeManager interface {
 	DeployNewNode(*manager.CreateDeploymentOptions) (*manager.NodeInstance, error)
+	DeleteNode(*manager.NodeInstance) error
 }
 
 type instanceInsertQuery func(storage.Transaction, *instance.Record) error
 
 type instanceSelectQuery func(storage.Transaction, *instance.SelectQueryInput) (*instance.Record, error)
+
+type instanceSelectAllQuery func(storage.Transaction) ([]*instance.Record, error)
+
+type instanceUpdateQuery func(storage.Transaction, *instance.UpdateQueryInput) error

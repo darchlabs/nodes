@@ -2,9 +2,9 @@
 
 --
 
-Run nodes made easy. With nodes you will run blockchain nodes on deman through a simple an easy to use API.
+Enhance your blockchain experience with effortless node execution, thanks to our intuitive API.
+Enjoy a frictionless process as you effortlessly run and manage blockchain nodes with ease.
 
-Nodes support evm blockchains for the moment, you only need to provide the desired chain url in order to fork them.
 
 ### How to run nodes?
 --
@@ -39,13 +39,27 @@ Nodes support evm blockchains for the moment, you only need to provide the desir
 
 ```json
 {
-	"network": "chainlink",
+	"network": "ethereum",
 	"envVars": {
-		"ENVIRONMENT": "sepolia",
-		"ETH_URL": "https://ethereum-sepolia.darchlabs.com",
-		"PASSWORD": "ThisIsSecurePassword",
-		"NODE_EMAIL": "dev@darchlabs.com",
-		"NODE_EMAIL_PWD": "thisIsPassword"
+		"ENVIRONMENT": "development",
+		"HOST": "0.0.0.0",
+		"NETWORK_URL": "https://patient-delicate-pine.quiknode.pro/4200300eae9e45c661df02030bac8bc34f8b618e/",
+		"BASE_CHAIN_DATA_PATH": "data",
+		"RPC_PORT": "8545",
+		"FROM_BLOCK_NUMBER": "17000000"
+	}
+}
+
+```
+
+> Celo
+
+```json
+{
+	"network": "celo",
+	"envVars": {
+		"ENVIRONMENT": "alfajores",
+		"PASSWORD": "ThisIsSecurePassword"
 	}
 }
 ```

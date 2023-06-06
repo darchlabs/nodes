@@ -56,7 +56,6 @@ func New(config *Config) (*Manager, error) {
 	// v2 kubernetes setup
 	//get remote file if exist. Otherwise path only will be used
 	if config.KubeconfigRemoteURL != "" {
-		fmt.Println("--------- url file ", config.KubeconfigRemoteURL)
 		res, err := http.Get(config.KubeconfigRemoteURL)
 		if err != nil {
 			return nil, errors.Wrap(err, "manager: New http.Get error")
@@ -89,9 +88,6 @@ func New(config *Config) (*Manager, error) {
 	}
 
 	config.MainConfig.Images = config.MainConfig.ParseImages()
-	for k, v := range config.MainConfig.Images {
-		fmt.Println("images for", k, "related images", v)
-	}
 	m := &Manager{
 		MainConfig:            config.MainConfig,
 		nodes:                 make(map[string]*NodeInstance),

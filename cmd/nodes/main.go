@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/darchlabs/nodes/config"
@@ -16,7 +15,6 @@ import (
 )
 
 func main() {
-	fmt.Println("------ Starting node runner")
 	conf := &config.Config{}
 	err := envconfig.Process("", conf)
 	check(err)
@@ -38,7 +36,6 @@ func main() {
 		MainConfig:    conf,
 	})
 	check(err)
-	fmt.Println(app)
 
 	server := api.NewServer(&api.ServerConfig{
 		Port:              conf.ApiServerPort,

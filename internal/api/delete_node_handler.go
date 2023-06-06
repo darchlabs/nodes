@@ -6,12 +6,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-type deleteNodeHandlerRequest struct {
+type deleteNodeHandlerV2Request struct {
 	NodeID string `json:"nodeId"`
 }
 
 func deleteNodeHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
-	var req deleteNodeHandlerRequest
+	var req deleteNodeHandlerV2Request
 	err := c.BodyParser(&req)
 	if err != nil {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: deleteNodeHandler c.BodyParser error")
@@ -30,6 +30,6 @@ func deleteNodeHandler(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: deleteNodeHandler node.cmd.Stop error")
 	}
 
-	ctx.server.nodesManager.Delete(cmd.ID)
+	ctx.server.nodesManager.DeleteInstance(cmd.ID)
 	return nil, fiber.StatusOK, nil
 }
