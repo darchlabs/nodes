@@ -9,14 +9,16 @@ func InsertQuery(tx storage.Transaction, record *Record) error {
 	_, err := tx.Exec(`
 		INSERT INTO instances (
 			id,
+			user_id,
 			network,
 			environment,
 			name,
 			artifacts,
 			service_url,
 			created_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7);`,
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
 		record.ID,
+		record.UserID,
 		record.Network,
 		record.Environment,
 		record.Name,

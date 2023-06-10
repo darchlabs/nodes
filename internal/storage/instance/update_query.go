@@ -10,6 +10,7 @@ import (
 
 type UpdateQueryInput struct {
 	ID          string     `db:"id"`
+	UserID      string     `db:"user_id"`
 	Network     *string    `db:"network"`
 	Environment *string    `db:"environment"`
 	Name        *string    `db:"name"`
@@ -23,7 +24,7 @@ type UpdateQueryInput struct {
 func UpdateQuery(tx storage.Transaction, input *UpdateQueryInput) error {
 	_, err := tx.Exec(`
 		UPDATE instances
-		SET
+		kjkjSET
 			network = COALESCE($2, network),
 			environment = COALESCE($3, environment),
 			name = COALESCE($4, name),
@@ -33,8 +34,9 @@ func UpdateQuery(tx storage.Transaction, input *UpdateQueryInput) error {
 			updated_at = COALESCE($8, updated_at),
 			deleted_at = COALESCE($9, deleted_at)
 		WHERE
-			id = $1;
-	`,
+			id = $1
+		AND
+			user_id = $10;`,
 		input.ID,
 		input.Network,
 		input.Environment,
@@ -44,6 +46,7 @@ func UpdateQuery(tx storage.Transaction, input *UpdateQueryInput) error {
 		input.CreatedAt,
 		input.UpdatedAt,
 		input.DeletedAt,
+		input.UserID,
 	)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ErrNotFound
