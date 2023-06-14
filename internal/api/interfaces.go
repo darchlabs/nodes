@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/darchlabs/nodes/internal/manager"
 	"github.com/darchlabs/nodes/internal/storage"
-	"github.com/darchlabs/nodes/internal/storage/instance"
+	instancedb "github.com/darchlabs/nodes/internal/storage/instance"
 )
 
 type nodeManager interface {
@@ -11,10 +11,12 @@ type nodeManager interface {
 	DeleteNode(*manager.NodeInstance) error
 }
 
-type instanceInsertQuery func(storage.Transaction, *instance.Record) error
+type instanceInsertQuery func(storage.Transaction, *instancedb.Record) error
 
-type instanceSelectByUserIDQuery func(storage.Transaction, *instance.SelectByUserIDQueryInput) (*instance.Record, error)
+type instanceSelectByUserIDQuery func(storage.Transaction, *instancedb.SelectByUserIDQueryInput) (*instancedb.Record, error)
 
-type instanceSelectAllQuery func(storage.Transaction) ([]*instance.Record, error)
+type instanceSelectAllByUserIDQuery func(storage.Transaction, *instancedb.SelectAllByUserIDQuery) ([]*instancedb.Record, error)
 
-type instanceUpdateQuery func(storage.Transaction, *instance.UpdateQueryInput) error
+type instanceUpdateQuery func(storage.Transaction, *instancedb.UpdateQueryInput) error
+
+type instanceSelectQuery func(storage.Transaction, *instancedb.SelectQueryInput) (*instancedb.Record, error)

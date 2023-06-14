@@ -11,7 +11,7 @@ func routeV2Endpoints(ctx *Context) {
 		instanceInsertQuery: instance.InsertQuery,
 	}
 	getNodesV2Handler := &GetNodesV2Handler{
-		instanceSelectAllQuery: instance.SelectAllQuery,
+		instanceSelectAllByUserIDQuery: instance.SelectAllByUserID,
 	}
 	deleteNodesV2Handler := &DeleteNodesV2Handler{
 		instanceUpdateQuery:         instance.UpdateQuery,
