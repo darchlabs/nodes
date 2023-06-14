@@ -112,7 +112,6 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 	// 1. Create Chainlink-postgres-db service
 	log.Printf("[MANAGER] start Chainlink-postgres service <%s> creation", psqlNameRef)
 
-	arts.Services = append(arts.Services, psqlNameRef)
 	psqlSvc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: psqlNameRef,
@@ -138,6 +137,7 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 		return nil, errors.Wrap(err, "manager: Manager.ChainlinkNode m.clusterClient.CoreV1().Service.Create psql error")
 	}
 
+	arts.Services = append(arts.Services, psqlNameRef)
 	log.Printf("[MANAGER] Chainlink-postgres service <%s> created [DONE ✔︎]", psqlNameRef)
 
 	// 2. Create Chainlink-postgres-db deployment
@@ -204,7 +204,7 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 							Name: "nodes-pvc",
 							VolumeSource: corev1.VolumeSource{
 								HostPath: &corev1.HostPathVolumeSource{
-									Path: fmt.Sprintf("/mnt/data/nodes-volume/databases/%s", nodeName),
+									Path: fmt.Sprintf("/mnt/data/nodes-volume/%s/%s/%s/psql-database/", network, networkEnv, nodeName),
 								},
 							},
 						},
@@ -223,6 +223,7 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 		return nil, errors.Wrap(err, "manager: Manager.ChainlinkNode m.clusterClient.AppsV1().Deployment.Create psql-deployment error")
 	}
 
+	arts.Deployments = append(arts.Deployments, psqlNameRef)
 	log.Printf("[MANAGER] Chainlink-postgres deployment <%s> created [DONE ✔︎]", psqlNameRef)
 
 	// ### CHAINLINK RELATED
@@ -230,7 +231,6 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 	log.Printf("[MANAGER] start Chainlink-node service <%s> creation", chainlinkNameRef)
 
 	// 3. Create chainlink-node-svc
-	arts.Services = append(arts.Services, chainlinkNameRef)
 	chainlinkSvc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: chainlinkNameRef,
@@ -256,6 +256,7 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 		return nil, errors.Wrap(err, "manager: Manager.ChainlinkNode m.clusterClient.CoreV1().Service.Create service error")
 	}
 
+	arts.Services = append(arts.Services, chainlinkNameRef)
 	log.Printf("[MANAGER] Chainlink-node service <%s> created [DONE ✔︎]", chainlinkNameRef)
 
 	// 4. Create Chainlink-node-deployment
@@ -331,6 +332,7 @@ func (m *Manager) ChainlinkNode(network string, env map[string]string) (*NodeIns
 		return nil, errors.Wrap(err, "manager: Manager.ChainlinkNode m.clusterClient.AppsV1().Deployment.Create chainlink-deployment error")
 	}
 
+	arts.Deployments = append(arts.Deployments, chainlinkNameRef)
 	log.Printf("[MANAGER] Chainlink-node deployment <%s> created [DONE ✔︎]", chainlinkNameRef)
 
 	return &NodeInstance{
