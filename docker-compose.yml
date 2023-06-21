@@ -2,7 +2,7 @@ version: '3'
 
 services:
   nodes:
-    image: darchlabs/nodes # using image name tag
+    image: darchlabs/nodes:nightly # using image name tag
     depends_on:
       - postgres
       - redis
@@ -14,13 +14,13 @@ services:
       - "8545-8595:8545-8595"
       - "6969:6969"
     volumes:
-      - ../data:/home/nodes/data:rw
+      - ./data:/home/nodes/data:rw
   redis:
     image: redis:latest
     ports:
       - 6379:6379
     volumes:
-      - ../data/redis:/data-redis:rw
+      - ./data/redis:/data-redis:rw
 
   postgres:
     image: postgres:13

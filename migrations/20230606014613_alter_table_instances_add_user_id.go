@@ -13,7 +13,7 @@ func init() {
 func upAlterTableInstancesAddUserId(tx *sql.Tx) error {
 	// This code is executed when the migration is applied.
 	_, err := tx.Exec(`
-		ALTER TABLE instances ADD COLUMN user_id NOT NULL;
+		ALTER TABLE instances ADD COLUMN user_id TEXT NOT NULL;
 	`)
 	if err != nil {
 		return err
