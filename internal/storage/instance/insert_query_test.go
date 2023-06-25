@@ -13,6 +13,7 @@ func Test_InsertQuery_Integration(t *testing.T) {
 	test.GetTxCall(t, func(db *sqlx.Tx, _ []interface{}) {
 		record := &Record{
 			ID:          "example-id",
+			UserID:      "user-id",
 			Network:     "darchlabs",
 			Environment: "mainnet",
 			Name:        "master-node",

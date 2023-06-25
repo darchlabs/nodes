@@ -2,25 +2,37 @@ version: '3'
 
 services:
   nodes:
-    image: darchlabs/nodes # using image name tag
+    image: darchlabs/nodes:nightly # using image name tag
     depends_on:
       - postgres
       - redis
     restart: always
     env_file:
       - ./node.env
+    volumes:
+      - ./data/nodes:/home/nodes/data:rw
     restart: on-failure
     ports:
       - "8545-8595:8545-8595"
       - "6969:6969"
+
+  backoffice:
+    image: darchlabs/backoffice:0.0.2
+    depends_on:
+      - postgres_backoffice
+    restart: always
+    env_file:
+      - ./backoffice.env
+    ports:
+      - "9000:9000"
     volumes:
-      - ../data:/home/nodes/data:rw
+      - ./data/backoffice:/home/backoffice/data
   redis:
     image: redis:latest
     ports:
       - 6379:6379
     volumes:
-      - ../data/redis:/data-redis:rw
+      - ./data/redis:/data-redis:rw
 
   postgres:
     image: postgres:13
@@ -30,4 +42,14 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+
+  postgres_backoffice:
+    image: postgres:13
+    ports:
+    - 5433:5432
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
 

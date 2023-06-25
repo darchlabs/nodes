@@ -14,9 +14,10 @@ type Config struct {
 	NetworksURL      map[string]string `envconfig:"networks_url" required:"false"`
 
 	// server config
-	ApiServerHost string `envconfig:"api_server_host" default:"0.0.0.0."`
-	ApiServerPort string `envconfig:"api_server_port" default:"6969"`
-	MasterURL     string `envconfig:"-" default:"http://master.darchlabs.com/nodes/status"`
+	ApiServerHost    string `envconfig:"api_server_host" default:"0.0.0.0."`
+	ApiServerPort    string `envconfig:"api_server_port" default:"6969"`
+	MasterURL        string `envconfig:"-" default:"http://master.darchlabs.com/nodes/status"`
+	BackofficeApiURL string `envconfig:"backoffice_api_url" required:"true"`
 
 	// database config
 	RedisURL    string `envconfig:"redis_url" required:"true"`

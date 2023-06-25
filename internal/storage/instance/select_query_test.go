@@ -11,10 +11,12 @@ import (
 func Test_SelectQuery_Integration(t *testing.T) {
 	test.GetTxCall(t, func(tx *sqlx.Tx, _ []interface{}) {
 		expectedID := "example-id"
+		expectedUserID := "example-user-id"
 
 		_, err := tx.Exec(`
 			INSERT INTO instances (
 				id,
+				user_id,
 				network,
 				environment,
 				name,
@@ -23,6 +25,7 @@ func Test_SelectQuery_Integration(t *testing.T) {
 				created_at
 			) VALUES (
 				$1,
+				$2
 				'test',
 				'dev',
 				'test-record',
@@ -31,10 +34,11 @@ func Test_SelectQuery_Integration(t *testing.T) {
 				now()
 			);`,
 			expectedID,
+			expectedUserID,
 		)
 		require.NoError(t, err)
 
-		record, err := SelectQuery(tx, &SelectQueryInput{ID: expectedID})
+		record, err := SelectQuery(tx, &SelectQueryInput{ID: expectedID, UserID: expectedUserID})
 
 		require.NoError(t, err)
 		require.Equal(t, expectedID, record.ID)

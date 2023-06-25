@@ -9,6 +9,7 @@ import (
 
 type Record struct {
 	ID          string     `db:"id"`
+	UserID      string     `db:"user_id"`
 	Network     string     `db:"network"`
 	Environment string     `db:"environment"`
 	Name        string     `db:"name"`

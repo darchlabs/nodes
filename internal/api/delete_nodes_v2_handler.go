@@ -11,12 +11,13 @@ import (
 )
 
 type DeleteNodesV2Handler struct {
-	instanceUpdateQuery instanceUpdateQuery
-	instanceSelectQuery instanceSelectQuery
+	instanceUpdateQuery         instanceUpdateQuery
+	instanceSelectByUserIDQuery instanceSelectByUserIDQuery
 }
 
 type deleteNodesV2HandlerRequest struct {
-	ID string
+	ID     string `json:"id"`
+	userID string `json:"-"`
 }
 
 func (h *DeleteNodesV2Handler) Invoke(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
@@ -24,6 +25,11 @@ func (h *DeleteNodesV2Handler) Invoke(ctx *Context, c *fiber.Ctx) (interface{}, 
 	err := c.BodyParser(&req)
 	if err != nil {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: DeleteNodesV2HandlerRequest.Invoke c.BodyParser")
+	}
+
+	req.userID, err = getUserIDFromRequestCtx(c)
+	if err != nil {
+		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: DeleteNodesV2Handler.Invoke getUserIDFromRequestCtx error")
 	}
 
 	_, status, err := h.invoke(ctx, &req)
@@ -35,14 +41,15 @@ func (h *DeleteNodesV2Handler) Invoke(ctx *Context, c *fiber.Ctx) (interface{}, 
 
 func (h *DeleteNodesV2Handler) invoke(ctx *Context, req *deleteNodesV2HandlerRequest) (interface{}, int, error) {
 	// select instance
-	instanceRecord, err := h.instanceSelectQuery(ctx.sqlStore, &instance.SelectQueryInput{
-		ID: req.ID,
+	instanceRecord, err := h.instanceSelectByUserIDQuery(ctx.sqlStore, &instance.SelectByUserIDQueryInput{
+		ID:     req.ID,
+		UserID: req.userID,
 	})
 	if errors.Is(err, instance.ErrNotFound) {
 		return nil, fiber.StatusNotFound, nil
 	}
 	if err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: DeleteNodesV2HandlerRequest.invoke h.instanceSelectQuery error")
+		return nil, http.StatusInternalServerError, errors.Wrap(err, "api: DeleteNodesV2HandlerRequest.invoke h.instanceSelectByUSerIDQuery error")
 	}
 
 	// delete artifacts
@@ -67,6 +74,7 @@ func (h *DeleteNodesV2Handler) invoke(ctx *Context, req *deleteNodesV2HandlerReq
 	now := time.Now()
 	err = h.instanceUpdateQuery(ctx.sqlStore, &instance.UpdateQueryInput{
 		ID:        req.ID,
+		UserID:    req.userID,
 		DeletedAt: &now,
 	})
 	if err != nil {

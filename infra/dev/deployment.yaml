@@ -88,7 +88,7 @@ spec:
 
       containers:
       - name: nodes
-        image: darchlabs/nodes:dev
+        image: darchlabs/nodes:nightly
         imagePullPolicy: Always
         ports:
         - containerPort: 6969
@@ -125,4 +125,9 @@ spec:
             value: "evm|darchlabs/node-ethereum-dev:0.0.2"
           - name: POSTGRES_DSN
             value: "postgres://postgres:postgres@postgres-node:5432/postgres?sslmode=disable"
-
+          - name: DB_DRIVER
+            value: "postgres"
+          - name: POSTGRES_MIGRATIONS_DIR
+            value: "migrations/"
+          - name: BACKOFFICE_API_URL
+            value: "http://backoffice:9000"

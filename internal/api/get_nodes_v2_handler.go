@@ -3,6 +3,7 @@ package api
 import (
 	"time"
 
+	"github.com/darchlabs/nodes/internal/storage/instance"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
 )
@@ -23,11 +24,16 @@ type getNodesV2HandlerResponse struct {
 }
 
 type GetNodesV2Handler struct {
-	instanceSelectAllQuery instanceSelectAllQuery
+	instanceSelectAllByUserIDQuery instanceSelectAllByUserIDQuery
 }
 
 func (h *GetNodesV2Handler) Invoke(ctx *Context, c *fiber.Ctx) (interface{}, int, error) {
-	payload, status, err := h.invoke(ctx)
+	userID, err := getUserIDFromRequestCtx(c)
+	if err != nil {
+		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: GetNodesV2Handler.Invoke getUserIDFromRequestCtx error")
+	}
+
+	payload, status, err := h.invoke(ctx, userID)
 	if err != nil {
 		return nil, status, errors.Wrap(err, "api: GetNodesV2Handler.Invoke h.invoke error")
 	}
@@ -35,8 +41,10 @@ func (h *GetNodesV2Handler) Invoke(ctx *Context, c *fiber.Ctx) (interface{}, int
 	return payload, status, nil
 }
 
-func (h *GetNodesV2Handler) invoke(ctx *Context) (interface{}, int, error) {
-	records, err := h.instanceSelectAllQuery(ctx.sqlStore)
+func (h *GetNodesV2Handler) invoke(ctx *Context, userID string) (interface{}, int, error) {
+	records, err := h.instanceSelectAllByUserIDQuery(ctx.sqlStore, &instance.SelectAllByUserIDQuery{
+		UserID: userID,
+	})
 	if err != nil {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "manager: GetNodesV2Handler.invoke h.instanceSelectAllQuery")
 	}

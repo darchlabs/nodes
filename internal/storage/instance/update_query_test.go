@@ -11,9 +11,12 @@ import (
 
 func Test_UpdateQuery_integration(t *testing.T) {
 	test.GetTxCall(t, func(db *sqlx.Tx, _ []interface{}) {
+		id := "test-id"
+		userID := "test-user-id"
 		_, err := db.Exec(`
 			INSERT INTO instances (
 				id,
+				user_id
 				network,
 				environment,
 				name,
@@ -21,20 +24,24 @@ func Test_UpdateQuery_integration(t *testing.T) {
 				artifacts,
 				created_at
 			) VALUES (
-				'test-id',
+				$1,
+				$2,
 				'some-network',
 				'mainnet',
 				'test-node',
 				'http://node.com/rpc',
 				'{"foo": 123, "bar": "baz"}'::jsonb,
 				now()
-			);
-		`)
+			);`,
+			id,
+			userID,
+		)
 		require.NoError(t, err)
 
 		now := time.Now()
 		err = UpdateQuery(db, &UpdateQueryInput{
-			ID:        "test-id",
+			ID:        id,
+			UserID:    userID,
 			DeletedAt: &now,
 		})
 

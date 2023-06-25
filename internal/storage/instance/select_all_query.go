@@ -5,10 +5,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-func SelectAllQuery(tx storage.Transaction) ([]*Record, error) {
+type SelectAllByUserIDQuery struct {
+	UserID string
+}
+
+func SelectAllByUserID(tx storage.Transaction, input *SelectAllByUserIDQuery) ([]*Record, error) {
 	records := make([]*Record, 0)
 
-	err := tx.Select(&records, `SELECT * FROM instances WHERE deleted_at IS NULL;`)
+	err := tx.Select(
+		&records,
+		`SELECT * FROM instances WHERE user_id = $1 AND deleted_at IS NULL;`,
+		input.UserID,
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "instance: SelectAllQuery tx.Get error")
 	}

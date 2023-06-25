@@ -16,6 +16,7 @@ func Test_SelectAllQuery_Integration(t *testing.T) {
 		_, err := tx.Exec(`
 			INSERT INTO instances (
 				id,
+				user_id,
 				network,
 				environment,
 				name,
@@ -24,6 +25,7 @@ func Test_SelectAllQuery_Integration(t *testing.T) {
 				created_at
 			) VALUES (
 				$1,
+				'user-id',
 				'test',
 				'dev',
 				'test-record-1',
@@ -38,6 +40,7 @@ func Test_SelectAllQuery_Integration(t *testing.T) {
 		_, err = tx.Exec(`
 			INSERT INTO instances (
 				id,
+				user_id
 				network,
 				environment,
 				name,
@@ -46,6 +49,7 @@ func Test_SelectAllQuery_Integration(t *testing.T) {
 				created_at
 			) VALUES (
 				$1,
+				'user_id',
 				'test',
 				'dev',
 				'test-record-2',
@@ -57,7 +61,7 @@ func Test_SelectAllQuery_Integration(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		records, err := SelectAllQuery(tx)
+		records, err := SelectAllQuery(tx, "user_id")
 
 		require.NoError(t, err)
 		require.Equal(t, 2, len(records))

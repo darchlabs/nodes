@@ -17,6 +17,7 @@ type PostNewNodeV2Handler struct {
 type postNewNodev2HandlerRequest struct {
 	Network string            `json:"network"`
 	EnvVars map[string]string `json:"envVars"`
+	userID  string            `json:"-"`
 }
 
 type PostNewNodev2HandlerResponse struct {
@@ -35,6 +36,11 @@ func (h *PostNewNodeV2Handler) Invoke(ctx *Context, c *fiber.Ctx) (interface{}, 
 	err := c.BodyParser(&req)
 	if err != nil {
 		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: PostNewNodeV2Handler.Invoke c.BodyParser")
+	}
+
+	req.userID, err = getUserIDFromRequestCtx(c)
+	if err != nil {
+		return nil, fiber.StatusInternalServerError, errors.Wrap(err, "api: PostNewNodeV2Handler.Invoke getUserIDFromRequestCtx")
 	}
 
 	payload, status, err := h.invoke(ctx, &req)
@@ -59,6 +65,7 @@ func (h *PostNewNodeV2Handler) invoke(ctx *Context, req *postNewNodev2HandlerReq
 
 	instanceRecord := &instance.Record{
 		ID:          nodeInstance.ID,
+		UserID:      req.userID,
 		Network:     nodeInstance.Config.Network,
 		Environment: nodeInstance.Config.Environment,
 		ServiceURL:  fmt.Sprintf("http://%s:%d", nodeInstance.Name, nodeInstance.Config.Port),

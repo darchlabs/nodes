@@ -14,6 +14,7 @@ type App struct {
 	KeyValueStore storage.KeyValue
 	SqlStore      storage.SQL
 	NameGenerator *namer.Namer
+	Config        *config.Config
 }
 
 type Config struct {
@@ -48,5 +49,6 @@ func NewApp(conf *Config) (*App, error) {
 		KeyValueStore: conf.KeyValueStore,
 		SqlStore:      conf.SqlStore,
 		NameGenerator: nameGen,
+		Config:        conf.MainConfig,
 	}, nil
 }

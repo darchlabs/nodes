@@ -26,6 +26,7 @@ history
 *.dylib
 .env
 node.env
+backoffice.env
 
 # Test binary, built with `go test -c`
 *.test
