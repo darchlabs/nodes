@@ -63,6 +63,7 @@ func (s *Server) Start(app *application.App) error {
 			kvStore:     app.KeyValueStore,
 			sqlStore:    app.SqlStore,
 			nodeManager: app.Manager,
+			app:         app,
 		}
 		// route endpoints
 		routeNodeEndpoints("/api/v1/nodes", ctx)

@@ -1,6 +1,10 @@
 package api
 
 import (
+	"net/http"
+
+	"github.com/darchlabs/backoffice/pkg/client"
+	"github.com/darchlabs/backoffice/pkg/middleware"
 	"github.com/darchlabs/nodes/internal/storage/instance"
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,6 +22,15 @@ func routeV2Endpoints(ctx *Context) {
 		instanceSelectByUserIDQuery: instance.SelectByUserIDQuery,
 	}
 
+	// middlewares
+
+	cl := client.New(&client.Config{
+		Client:  http.DefaultClient,
+		BaseURL: ctx.app.Config.BackofficeApiURL,
+	})
+
+	auth := middleware.NewAuth(cl)
+
 	// # Route endpounts
 	ctx.server.server.Get("/api/v2/health", handleFunc(
 		ctx,
@@ -26,7 +39,7 @@ func routeV2Endpoints(ctx *Context) {
 		},
 	))
 
-	ctx.server.server.Post("/api/v2/nodes", handleFunc(ctx, postNewNodeV2Handler.Invoke))
-	ctx.server.server.Get("/api/v2/nodes", handleFunc(ctx, getNodesV2Handler.Invoke))
-	ctx.server.server.Delete("/api/v2/nodes", handleFunc(ctx, deleteNodesV2Handler.Invoke))
+	ctx.server.server.Post("/api/v2/nodes", auth.Middleware, handleFunc(ctx, postNewNodeV2Handler.Invoke))
+	ctx.server.server.Get("/api/v2/nodes", auth.Middleware, handleFunc(ctx, getNodesV2Handler.Invoke))
+	ctx.server.server.Delete("/api/v2/nodes", auth.Middleware, handleFunc(ctx, deleteNodesV2Handler.Invoke))
 }

@@ -14,7 +14,7 @@ func SelectAllByUserID(tx storage.Transaction, input *SelectAllByUserIDQuery) ([
 
 	err := tx.Select(
 		&records,
-		`SELECT * FROM instances WHERE user_id = $1 deleted_at IS NULL;`,
+		`SELECT * FROM instances WHERE user_id = $1 AND deleted_at IS NULL;`,
 		input.UserID,
 	)
 	if err != nil {
