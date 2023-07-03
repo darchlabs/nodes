@@ -24,7 +24,7 @@ type UpdateQueryInput struct {
 func UpdateQuery(tx storage.Transaction, input *UpdateQueryInput) error {
 	_, err := tx.Exec(`
 		UPDATE instances
-		kjkjSET
+		SET
 			network = COALESCE($2, network),
 			environment = COALESCE($3, environment),
 			name = COALESCE($4, name),
